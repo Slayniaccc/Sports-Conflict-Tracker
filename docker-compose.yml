@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: sports_tracker
+      POSTGRES_USER: Slayniaccc
+      POSTGRES_PASSWORD: p3ssw0rd!!
+    ports:
+      - "5432:5432"
+
+
+
+   
