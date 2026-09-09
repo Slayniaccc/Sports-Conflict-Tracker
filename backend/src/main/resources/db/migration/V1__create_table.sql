@@ -1,8 +1,6 @@
-CREATE TABLE fixture(
+CREATE TABLE Team(
     id BIGSERIAL PRIMARY KEY,
-    home_team_id BIGINT NOT NULL, REFERENCES team(id),
-    away_team_id BIGINT NOT NULL, REFERENCES team(id),
-    kickoff  TIMESTAMPTZ NOT NULL,
-    is_rivalry BOOLEAN NOT NULL, DEFAULT FALSE
-       is_playoff_implication BOOLEAN NOT NULL, DEFAULT FALSE
+   name VARCHAR(100) NOT NULL,
+   league VARCHAR(10) NOT NULL,
+   external_id VARCHAR(50) NOT NULL UNIQUE
 )
