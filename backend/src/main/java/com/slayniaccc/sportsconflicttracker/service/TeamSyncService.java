@@ -25,7 +25,10 @@ public class TeamSyncService {
             .retrieve() //network call occurs here
             .body(BallDontLieTeamsResponse.class);
 
-        for (var bdlTeam : response.data()) { //iterates over parsed dto objects
+        for (var bdlTeam : response.data()) {
+              if (bdlTeam.id() < 1 || bdlTeam.id() > 30) {
+                continue;
+            } //iterates over parsed dto objects
             TeamEntity entity = new TeamEntity(); //fresh entity
             entity.setName(bdlTeam.full_name());//maps dto field to entity field
             entity.setLeague("NBA");

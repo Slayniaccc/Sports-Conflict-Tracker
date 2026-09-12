@@ -7,3 +7,6 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: true
+
+balldontlie:
+  api-key: ${BALLDONTLIE_API_KEY}
