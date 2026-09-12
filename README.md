@@ -38,9 +38,12 @@ The rule engine is pure Java with no framework dependency. It can be tested in i
 🚧 In development.
 
 - [x] Project scaffolding, JDK/Maven/JUnit toolchain
-- [ ] Domain model + rule engine
-- [ ] Postgres schema + Flyway migrations
-- [ ] Spring REST API
+- [x] Domain model + rule engine (pure Java, tested independently of Spring)
+- [x] Postgres schema + Flyway migrations
+- [x] Spring Boot setup, JPA entities, repositories, initial REST endpoints
+- [x] Live BALLDONTLIE integration — real NBA team data fetched and persisted
+- [ ] DTOs + auth (registration/login)
+- [ ] Remaining league integrations (NFL, MLB, EPL)
 - [ ] Frontend
 - [ ] Deployment
 - [ ] Auth
