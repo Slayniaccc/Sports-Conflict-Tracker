@@ -4,6 +4,9 @@ import com.slayniaccc.sportsconflicttracker.dto.RegisterUserRequest;
 import com.slayniaccc.sportsconflicttracker.entity.AppUserEntity;
 import com.slayniaccc.sportsconflicttracker.dto.UserResponse;
 import com.slayniaccc.sportsconflicttracker.dto.LoginRequest;
+import org.springframework.http.HttpStatus;
+import java.util.Optional;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,9 +35,20 @@ appUserRepository.save(user);
 return new UserResponse(user.getId(), user.getEmail(), user.isVerified(), user.getCreatedAt(), user.getUpdatedAt());
 }
 @PostMapping("/api/users/login")
-public UserResponse login(@RequestBody LoginRequest logged){
-    AppUserEntity user = appUserRepository.findByEmail(logged.email());
-boolean matches = passwordEncoder.matches(logged.password(), user.getPasswordHash());
-return new UserResponse(user.getId(), user.getEmail(), user.isVerified(), user.getCreatedAt(), user.getUpdatedAt());
+public ResponseEntity<UserResponse> login(@RequestBody LoginRequest logged){
+    Optional<AppUserEntity> foundUser = appUserRepository.findByEmail(logged.email());
+if(foundUser.isEmpty()){
+return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+}
+   AppUserEntity user = foundUser.get();
+
+   boolean matches = passwordEncoder.matches(logged.password(), user.getPasswordHash());
+if(!matches){
+     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+}
+ UserResponse response = new UserResponse(user.getId(), user.getEmail(), user.isVerified(), user.getCreatedAt(), user.getUpdatedAt());
+    return ResponseEntity.ok(response);
 }
 }
+
+
