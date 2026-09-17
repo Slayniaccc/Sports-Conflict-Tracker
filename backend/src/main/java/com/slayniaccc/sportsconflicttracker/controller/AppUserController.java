@@ -3,7 +3,9 @@ import com.slayniaccc.sportsconflicttracker.repository.AppUserRepository;
 import com.slayniaccc.sportsconflicttracker.dto.RegisterUserRequest;
 import com.slayniaccc.sportsconflicttracker.entity.AppUserEntity;
 import com.slayniaccc.sportsconflicttracker.dto.UserResponse;
+import com.slayniaccc.sportsconflicttracker.config.JwtUtil;
 import com.slayniaccc.sportsconflicttracker.dto.LoginRequest;
+import com.slayniaccc.sportsconflicttracker.dto.LoginResponse;
 import org.springframework.http.HttpStatus;
 import java.util.Optional;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +20,12 @@ import java.time.Instant;
 public class AppUserController{
 private final AppUserRepository appUserRepository;
 private final PasswordEncoder passwordEncoder;
-public AppUserController(AppUserRepository appUserRepository, PasswordEncoder passwordEncoder){
+private final JwtUtil jwtUtil;
+
+public AppUserController(AppUserRepository appUserRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil){
     this.appUserRepository = appUserRepository;
     this.passwordEncoder = passwordEncoder;
+    this.jwtUtil = jwtUtil;
 }
 
 
@@ -35,7 +40,7 @@ appUserRepository.save(user);
 return new UserResponse(user.getId(), user.getEmail(), user.isVerified(), user.getCreatedAt(), user.getUpdatedAt());
 }
 @PostMapping("/api/users/login")
-public ResponseEntity<UserResponse> login(@RequestBody LoginRequest logged){
+public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest logged){
     Optional<AppUserEntity> foundUser = appUserRepository.findByEmail(logged.email());
 if(foundUser.isEmpty()){
 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -46,8 +51,11 @@ return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 if(!matches){
      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 }
+
  UserResponse response = new UserResponse(user.getId(), user.getEmail(), user.isVerified(), user.getCreatedAt(), user.getUpdatedAt());
-    return ResponseEntity.ok(response);
+ String token = jwtUtil.generateToken(user.getEmail());
+ LoginResponse loginResponse = new LoginResponse(response, token);
+    return ResponseEntity.ok(loginResponse);
 }
 }
 
