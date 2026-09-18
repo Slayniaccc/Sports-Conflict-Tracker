@@ -2,6 +2,8 @@ package com.slayniaccc.sportsconflicttracker.service;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNbaTeamsResponse;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNflTeamsResponse;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieMlbTeamsResponse;
+import com.slayniaccc.sportsconflicttracker.client.FootballDataClient;
+import com.slayniaccc.sportsconflicttracker.client.FootballDataTeamsResponse;
 import com.slayniaccc.sportsconflicttracker.entity.TeamEntity;
 import com.slayniaccc.sportsconflicttracker.repository.TeamRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,10 +16,12 @@ public class TeamSyncService {
 
     private final RestClient restClient;
     private final TeamRepository teamRepository;
+    private final FootballDataClient footballDataClient;
 
-    public TeamSyncService(TeamRepository teamRepository) {
+    public TeamSyncService(TeamRepository teamRepository, FootballDataClient footballDataClient) {
         this.restClient = RestClient.create("https://api.balldontlie.io");
         this.teamRepository = teamRepository;
+        this.footballDataClient = footballDataClient;
     }
 
     public void syncNbaTeams(String apiKey) {
@@ -74,4 +78,15 @@ public class TeamSyncService {
             teamRepository.save(entity);
         }
     }
+public void syncEplTeams(String apiKey) {
+    FootballDataTeamsResponse response = footballDataClient.getPlTeams(apiKey);
+
+    for (var t : response.teams()) {
+        TeamEntity entity = new TeamEntity();
+        entity.setName(t.name());
+        entity.setLeague("EPL");
+        entity.setExternalId(String.valueOf(t.id()));
+        teamRepository.save(entity);
+    }
+}
 }
