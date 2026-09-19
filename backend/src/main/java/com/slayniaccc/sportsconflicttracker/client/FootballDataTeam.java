@@ -10,3 +10,4 @@ public record FootballDataTeam(
     String tla,
     String crest
 ) {}
+

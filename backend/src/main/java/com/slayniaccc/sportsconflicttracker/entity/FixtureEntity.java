@@ -33,6 +33,9 @@ private boolean isRivalry;
 @ColumnDefault("false")
 private boolean isPlayoffImplication;
 
+@Column(name = "external_id", nullable = false, unique = true)
+private String externalId;
+
 public FixtureEntity() {}
 
 public Long getId() { return id; }
@@ -46,6 +49,8 @@ public boolean isRivalry() { return isRivalry; }
 public void setRivalry(boolean rivalry) { this.isRivalry = rivalry; }
 public boolean isPlayoffImplication() { return isPlayoffImplication; }
 public void setPlayoffImplication(boolean playoffImplication) { this.isPlayoffImplication = playoffImplication; }
+public String getExternalId() { return externalId; }
+public void setExternalId(String externalId) { this.externalId = externalId; }
 }
 
 
