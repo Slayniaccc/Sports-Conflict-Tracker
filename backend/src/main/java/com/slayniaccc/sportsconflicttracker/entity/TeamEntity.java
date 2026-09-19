@@ -16,7 +16,8 @@ private String name;
 @Column(nullable = false)
 private String league;
 
-@Column(name = "external_id", nullable = false, unique = true)
+
+@Column(name = "external_id", nullable = false)
 private String externalId;
  public TeamEntity() {}
 

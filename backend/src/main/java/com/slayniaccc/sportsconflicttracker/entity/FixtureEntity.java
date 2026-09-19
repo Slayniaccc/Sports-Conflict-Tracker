@@ -35,9 +35,12 @@ private boolean isPlayoffImplication;
 
 @Column(name = "external_id", nullable = false, unique = true)
 private String externalId;
+@Column(nullable = false)
+private String league;
 
 public FixtureEntity() {}
-
+public String getLeague() { return league; }
+public void setLeague(String league) { this.league = league; }
 public Long getId() { return id; }
 public TeamEntity getHomeTeam() { return homeTeam; }
 public void setHomeTeam(TeamEntity homeTeam) { this.homeTeam = homeTeam; }

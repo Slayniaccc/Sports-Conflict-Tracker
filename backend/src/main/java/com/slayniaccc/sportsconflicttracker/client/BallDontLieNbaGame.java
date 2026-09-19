@@ -8,7 +8,5 @@ String datetime,
 BallDontLieGameTeam home_team,
 BallDontLieGameTeam visitor_team
 
-){
-    public record BallDontLieGameTeam(Long id){}
-}
+){}
 

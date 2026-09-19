@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface FixtureRepository extends JpaRepository<FixtureEntity, Long> {
-     Optional<FixtureEntity> findByExternalId(String externalId);
+     Optional<FixtureEntity> findByLeagueAndExternalId(String league, String externalId);
 }
