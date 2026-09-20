@@ -33,7 +33,7 @@ private boolean isRivalry;
 @ColumnDefault("false")
 private boolean isPlayoffImplication;
 
-@Column(name = "external_id", nullable = false, unique = true)
+@Column(name = "external_id", nullable = false)
 private String externalId;
 @Column(nullable = false)
 private String league;

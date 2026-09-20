@@ -1,6 +1,8 @@
 package com.slayniaccc.sportsconflicttracker.service;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNbaGame;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNbaGamesResponse;
+import com.slayniaccc.sportsconflicttracker.client.BallDontLieMlbGame;
+import com.slayniaccc.sportsconflicttracker.client.BallDontLieMlbGamesResponse;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNflGame;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNflGamesResponse;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNbaTeamsResponse;
@@ -75,5 +77,33 @@ public FixtureSyncService(FixtureRepository fixtureRepository, TeamRepository te
             fixtureRepository.save(entity);
         }
     }
+public void syncMlbFixtures(String apiKey) {
+    BallDontLieMlbGamesResponse response = restClient.get()
+        .uri("/mlb/v1/games?seasons[]=2025")
+        .header("Authorization", apiKey)
+        .retrieve()
+        .body(BallDontLieMlbGamesResponse.class);
+
+    for (var game : response.data()) {
+        if (fixtureRepository.findByLeagueAndExternalId("MLB", String.valueOf(game.id())).isPresent()) {
+            continue;
+        }
+
+        TeamEntity home = teamRepository.findByLeagueAndExternalId("MLB", String.valueOf(game.home_team().id()))
+            .orElseThrow(() -> new IllegalStateException("Unknown home team: " + game.home_team().id()));
+
+        TeamEntity away = teamRepository.findByLeagueAndExternalId("MLB", String.valueOf(game.away_team().id()))
+            .orElseThrow(() -> new IllegalStateException("Unknown away team: " + game.away_team().id()));
+
+        FixtureEntity entity = new FixtureEntity();
+        entity.setHomeTeam(home);
+        entity.setAwayTeam(away);
+        entity.setKickoff(Instant.parse(game.date()));
+        entity.setLeague("MLB");
+        entity.setExternalId(String.valueOf(game.id()));
+
+        fixtureRepository.save(entity);
+    }
+}
 
 }
