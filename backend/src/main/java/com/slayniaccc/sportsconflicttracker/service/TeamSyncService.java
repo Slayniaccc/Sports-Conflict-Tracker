@@ -32,6 +32,9 @@ public class TeamSyncService {
             .body(BallDontLieNbaTeamsResponse.class);
 
         for (var bdlTeam : response.data()) {
+            if (teamRepository.findByLeagueAndExternalId("NBA", String.valueOf(bdlTeam.id())).isPresent()) {
+    continue;
+}
            // /nba/v1/teams returns 89 rows: 1–30 are current NBA franchises,
 // 37+ are defunct/historical/exhibition teams. Keep only current ones.
               if (bdlTeam.id() < 1 || bdlTeam.id() > 30) {
@@ -53,6 +56,9 @@ public class TeamSyncService {
             .body(BallDontLieNflTeamsResponse.class);
 
         for (var bdlTeam : response.data()) {
+            if (teamRepository.findByLeagueAndExternalId("NFL", String.valueOf(bdlTeam.id())).isPresent()) {
+    continue;
+}
               //iterates over parsed dto objects
             TeamEntity entity = new TeamEntity(); //fresh entity
             entity.setName(bdlTeam.full_name());//maps dto field to entity field
@@ -70,6 +76,9 @@ public class TeamSyncService {
             .body(BallDontLieMlbTeamsResponse.class);
 
         for (var bdlTeam : response.data()) {
+            if (teamRepository.findByLeagueAndExternalId("MLB", String.valueOf(bdlTeam.id())).isPresent()) {
+    continue;
+}
               //iterates over parsed dto objects
             TeamEntity entity = new TeamEntity(); //fresh entity
             entity.setName(bdlTeam.display_name());//maps dto field to entity field
@@ -82,6 +91,9 @@ public void syncEplTeams(String apiKey) {
     FootballDataTeamsResponse response = footballDataClient.getPlTeams(apiKey);
 
     for (var t : response.teams()) {
+        if (teamRepository.findByLeagueAndExternalId("EPL", String.valueOf(t.id())).isPresent()) {
+    continue;
+}
         TeamEntity entity = new TeamEntity();
         entity.setName(t.name());
         entity.setLeague("EPL");
