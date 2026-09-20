@@ -10,12 +10,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 class EplSyncTest {
 
-    @Autowired FixtureSyncService fixtureSyncService;
-    @Autowired FixtureRepository fixtureRepository;
+    @Autowired
+    TeamSyncService teamSyncService;
+
+    @Autowired
+    FixtureSyncService fixtureSyncService;
+
+    @Autowired
+    FixtureRepository fixtureRepository;
 
     @Test
     void syncsEplFixtures() {
         String apiKey = System.getenv("FOOTBALL_DATA_API_KEY");
+
+        teamSyncService.syncEplTeams(apiKey);
         fixtureSyncService.syncEplFixtures(apiKey);
 
         long count = fixtureRepository.findAll().stream()
