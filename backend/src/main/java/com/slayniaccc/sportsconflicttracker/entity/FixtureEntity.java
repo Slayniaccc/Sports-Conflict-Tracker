@@ -33,8 +33,14 @@ private boolean isRivalry;
 @ColumnDefault("false")
 private boolean isPlayoffImplication;
 
-public FixtureEntity() {}
+@Column(name = "external_id", nullable = false)
+private String externalId;
+@Column(nullable = false)
+private String league;
 
+public FixtureEntity() {}
+public String getLeague() { return league; }
+public void setLeague(String league) { this.league = league; }
 public Long getId() { return id; }
 public TeamEntity getHomeTeam() { return homeTeam; }
 public void setHomeTeam(TeamEntity homeTeam) { this.homeTeam = homeTeam; }
@@ -46,6 +52,8 @@ public boolean isRivalry() { return isRivalry; }
 public void setRivalry(boolean rivalry) { this.isRivalry = rivalry; }
 public boolean isPlayoffImplication() { return isPlayoffImplication; }
 public void setPlayoffImplication(boolean playoffImplication) { this.isPlayoffImplication = playoffImplication; }
+public String getExternalId() { return externalId; }
+public void setExternalId(String externalId) { this.externalId = externalId; }
 }
 
 

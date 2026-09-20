@@ -1,13 +1,10 @@
 package com.slayniaccc.sportsconflicttracker.client;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record FootballDataTeam(
+public record FootballDataMatch(
     Long id,
-    String name,
-    String shortName,
-    String tla,
-    String crest
+    String utcDate,
+    String status,
+    FootballDataTeam homeTeam,
+    FootballDataTeam awayTeam
 ) {}
-
