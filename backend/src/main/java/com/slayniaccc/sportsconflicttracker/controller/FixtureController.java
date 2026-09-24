@@ -19,7 +19,10 @@ public class FixtureController {
     private final FixtureSyncService fixtureSyncService;
 
         @Value("${balldontlie.api-key}")
-    private String apiKey;
+    private String bdlApiKey;
+
+    @Value("${football.data.api-key}")
+    private String footballDataApiKey;
 
 
     public FixtureController(FixtureRepository fixtureRepository, FixtureSyncService fixtureSyncService) {
@@ -34,7 +37,12 @@ public class FixtureController {
 
       @PostMapping("/api/fixtures/sync/nba")
     public String syncNba() {
-        fixtureSyncService.syncNbaFixtures(apiKey);
+        fixtureSyncService.syncNbaFixtures(bdlApiKey);
         return "NBA fixtures synced";
     }
+    @PostMapping("/api/fixtures/sync/epl")
+public String syncEpl() {
+    fixtureSyncService.syncEplFixtures(footballDataApiKey);
+    return "EPL fixtures synced";
+}
 }

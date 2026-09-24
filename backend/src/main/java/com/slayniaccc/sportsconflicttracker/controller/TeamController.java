@@ -16,7 +16,10 @@ public class TeamController{
         private final TeamSyncService teamSyncService;
 
           @Value("${balldontlie.api-key}")
-    private String apiKey;
+    private String bdlApiKey;
+
+    @Value("${football.data.api-key}")
+    private String footballDataApiKey;
 
 
     public TeamController(TeamRepository teamRepository,  TeamSyncService teamSyncService){
@@ -30,7 +33,13 @@ public class TeamController{
     }
      @PostMapping("/api/teams/sync/nba")
     public String syncNba() {
-        teamSyncService.syncNbaTeams(apiKey);
+        teamSyncService.syncNbaTeams(bdlApiKey);
         return "NBA teams synced";
     }
+
+    @PostMapping("/api/teams/sync/epl")
+public String syncEpl() {
+    teamSyncService.syncEplTeams(footballDataApiKey);
+    return "EPL teams synced";
+}
 }

@@ -6,15 +6,15 @@ import com.slayniaccc.sportsconflicttracker.client.BallDontLieNbaGamesResponse;
 
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieMlbGame;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieMlbGamesResponse;
-
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNflGame;
+import com.slayniaccc.sportsconflicttracker.client.FootballDataClient;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNflGamesResponse;
 
 import com.slayniaccc.sportsconflicttracker.client.FootballDataMatchesResponse;
 
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
+
 import com.slayniaccc.sportsconflicttracker.entity.FixtureEntity;
 import com.slayniaccc.sportsconflicttracker.entity.TeamEntity;
 import com.slayniaccc.sportsconflicttracker.repository.FixtureRepository;
@@ -27,16 +27,16 @@ import java.util.Map;
 @Service
 public class FixtureSyncService{
 private final BallDontLieClient bdlClient;
-private final RestClient footballDataClient;
+private final FootballDataClient footballDataClient;
 private final FixtureRepository fixtureRepository;
 private final TeamRepository teamRepository;
 
 
-public FixtureSyncService(BallDontLieClient bdlClient, FixtureRepository fixtureRepository, TeamRepository teamRepository){
+public FixtureSyncService(BallDontLieClient bdlClient, FixtureRepository fixtureRepository, TeamRepository teamRepository, FootballDataClient footballDataClient){
      this.bdlClient = bdlClient;
         this.fixtureRepository = fixtureRepository;
         this.teamRepository = teamRepository;
-        this.footballDataClient = RestClient.create("https://api.football-data.org");
+        this.footballDataClient = footballDataClient;
 }
     public void syncNbaFixtures(String apiKey) {
          List<BallDontLieNbaGame> games = bdlClient.fetchAll(
@@ -129,12 +129,8 @@ if ("spring_training".equalsIgnoreCase(game.season_type())) {
 }
 
 public void syncEplFixtures(String apiKey) {
-    FootballDataMatchesResponse response = footballDataClient.get()
-        .uri("/v4/competitions/PL/matches?season=2026")
-        .header("X-Auth-Token", apiKey)
-        .retrieve()
-        .body(FootballDataMatchesResponse.class);
-
+    FootballDataMatchesResponse response = footballDataClient.getPlMatches(apiKey);
+  
     for (var match : response.matches()) {
         if (fixtureRepository.findByLeagueAndExternalId("EPL", String.valueOf(match.id())).isPresent()) {
             continue;
