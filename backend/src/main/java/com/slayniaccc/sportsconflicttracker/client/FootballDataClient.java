@@ -5,6 +5,7 @@ import org.springframework.web.client.RestClient;
 @Component
 public class FootballDataClient {
 
+
     private final RestClient restClient =
         RestClient.create("https://api.football-data.org/v4");
 

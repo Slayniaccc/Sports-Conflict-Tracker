@@ -12,7 +12,7 @@ import com.slayniaccc.sportsconflicttracker.client.BallDontLieClient;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieMlbTeam;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
+
 import java.util.List;
 import java.util.Map;
 

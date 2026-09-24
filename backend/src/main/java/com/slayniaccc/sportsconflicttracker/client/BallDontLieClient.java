@@ -15,11 +15,8 @@ public class BallDontLieClient {
     // Asking for the cap minimises the number of round trips.
     private static final int PER_PAGE = 100;
 
-    // Safety valve. If BALLDONTLIE ever returns the same next_cursor twice
-    // (which cursor APIs occasionally do under load), a naive while-loop would
-    // hammer their API forever. 200 pages * 100 rows = 20,000 records, which is
-    // comfortably above any single league-season, so hitting this cap means
-    // something is genuinely wrong.
+    // Safety valve.This would never be hit, if it is = something wrong somewhere in the code.
+   
     private static final int MAX_PAGES = 200;
 
     private final RestClient restClient;

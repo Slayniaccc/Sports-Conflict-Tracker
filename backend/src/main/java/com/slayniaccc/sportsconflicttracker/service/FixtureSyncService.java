@@ -1,11 +1,18 @@
 package com.slayniaccc.sportsconflicttracker.service;
+import com.slayniaccc.sportsconflicttracker.client.BallDontLieClient;
+
+import com.slayniaccc.sportsconflicttracker.client.BallDontLieNbaGame;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNbaGamesResponse;
+
+import com.slayniaccc.sportsconflicttracker.client.BallDontLieMlbGame;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieMlbGamesResponse;
+
+import com.slayniaccc.sportsconflicttracker.client.BallDontLieNflGame;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNflGamesResponse;
+
 import com.slayniaccc.sportsconflicttracker.client.FootballDataMatchesResponse;
 
 
-import java.time.Instant;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import com.slayniaccc.sportsconflicttracker.entity.FixtureEntity;
@@ -13,28 +20,34 @@ import com.slayniaccc.sportsconflicttracker.entity.TeamEntity;
 import com.slayniaccc.sportsconflicttracker.repository.FixtureRepository;
 import com.slayniaccc.sportsconflicttracker.repository.TeamRepository;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+
 @Service
 public class FixtureSyncService{
-private final RestClient bdlClient;
+private final BallDontLieClient bdlClient;
 private final RestClient footballDataClient;
 private final FixtureRepository fixtureRepository;
 private final TeamRepository teamRepository;
 
 
-public FixtureSyncService(FixtureRepository fixtureRepository, TeamRepository teamRepository){
-     this.bdlClient = RestClient.create("https://api.balldontlie.io");
+public FixtureSyncService(BallDontLieClient bdlClient, FixtureRepository fixtureRepository, TeamRepository teamRepository){
+     this.bdlClient = bdlClient;
         this.fixtureRepository = fixtureRepository;
         this.teamRepository = teamRepository;
         this.footballDataClient = RestClient.create("https://api.football-data.org");
 }
     public void syncNbaFixtures(String apiKey) {
-        BallDontLieNbaGamesResponse response = bdlClient.get()
-            .uri("/nba/v1/games?seasons[]=2026")
-            .header("Authorization", apiKey)
-            .retrieve() 
-            .body(BallDontLieNbaGamesResponse.class);
-
-        for (var game : response.data()) {
+         List<BallDontLieNbaGame> games = bdlClient.fetchAll(
+            apiKey,
+            "/nba/v1/games",
+            Map.of("seasons[]", "2026"),
+            BallDontLieNbaGamesResponse.class,
+            BallDontLieNbaGamesResponse::data,
+            r -> r.meta() == null ? null : r.meta().next_cursor()
+        );
+        for (var game : games) {
                  if (fixtureRepository.findByLeagueAndExternalId("NBA", String.valueOf(game.id())).isPresent())  {
             continue;
           }
@@ -55,13 +68,15 @@ public FixtureSyncService(FixtureRepository fixtureRepository, TeamRepository te
 
 
     public void syncNflFixtures(String apiKey) {
-        BallDontLieNflGamesResponse response = bdlClient.get()
-            .uri("/nfl/v1/games?seasons[]=2026")
-            .header("Authorization", apiKey)
-            .retrieve() 
-            .body(BallDontLieNflGamesResponse.class);
-
-        for (var game : response.data()) {
+       List<BallDontLieNflGame> games = bdlClient.fetchAll(
+            apiKey,
+            "/nfl/v1/games",
+            Map.of("seasons[]", "2026"),
+            BallDontLieNflGamesResponse.class,
+            BallDontLieNflGamesResponse::data,
+            r -> r.meta() == null ? null : r.meta().next_cursor()
+        );
+        for (var game : games) {
            if (fixtureRepository.findByLeagueAndExternalId("NFL", String.valueOf(game.id())).isPresent()) {
             continue;
           }
@@ -80,13 +95,16 @@ public FixtureSyncService(FixtureRepository fixtureRepository, TeamRepository te
         }
     }
 public void syncMlbFixtures(String apiKey) {
-    BallDontLieMlbGamesResponse response = bdlClient.get()
-        .uri("/mlb/v1/games?seasons[]=2025")
-        .header("Authorization", apiKey)
-        .retrieve()
-        .body(BallDontLieMlbGamesResponse.class);
+     List<BallDontLieMlbGame> games = bdlClient.fetchAll(
+            apiKey,
+            "/mlb/v1/games",
+            Map.of("seasons[]", "2025"),
+            BallDontLieMlbGamesResponse.class,
+            BallDontLieMlbGamesResponse::data,
+            r -> r.meta() == null ? null : r.meta().next_cursor()
+        );
 
-    for (var game : response.data()) {
+    for (var game : games) {
         if (fixtureRepository.findByLeagueAndExternalId("MLB", String.valueOf(game.id())).isPresent()) {
             continue;
         }
