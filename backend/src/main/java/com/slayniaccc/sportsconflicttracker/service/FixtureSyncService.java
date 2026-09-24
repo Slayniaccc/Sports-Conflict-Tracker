@@ -108,7 +108,9 @@ public void syncMlbFixtures(String apiKey) {
         if (fixtureRepository.findByLeagueAndExternalId("MLB", String.valueOf(game.id())).isPresent()) {
             continue;
         }
-
+if ("spring_training".equalsIgnoreCase(game.season_type())) {
+    continue;
+}
         TeamEntity home = teamRepository.findByLeagueAndExternalId("MLB", String.valueOf(game.home_team().id()))
             .orElseThrow(() -> new IllegalStateException("Unknown home team: " + game.home_team().id()));
 
