@@ -59,7 +59,12 @@ public FixtureSyncService(BallDontLieClient bdlClient, FixtureRepository fixture
             FixtureEntity entity = new FixtureEntity(); 
             entity.setHomeTeam(home);
             entity.setAwayTeam(away);
-            entity.setKickoff(Instant.parse(game.datetime()));
+
+            Instant kickoff = DateParsing.parseOrNull(game.datetime(), "NBA game " + game.id());
+if (kickoff == null) {
+    continue;
+}
+            entity.setKickoff(kickoff);
             entity.setLeague("NBA");
             entity.setExternalId(String.valueOf(game.id()));
             fixtureRepository.save(entity);
@@ -89,7 +94,12 @@ public FixtureSyncService(BallDontLieClient bdlClient, FixtureRepository fixture
             entity.setHomeTeam(home);
             entity.setAwayTeam(away);
             entity.setLeague("NFL");
-            entity.setKickoff(Instant.parse(game.date()));
+
+            Instant kickoff = DateParsing.parseOrNull(game.date(), "NFL game " + game.id());
+if (kickoff == null) {
+    continue;
+}
+              entity.setKickoff(kickoff);
             entity.setExternalId(String.valueOf(game.id()));
             fixtureRepository.save(entity);
         }
@@ -120,7 +130,12 @@ if ("spring_training".equalsIgnoreCase(game.season_type())) {
         FixtureEntity entity = new FixtureEntity();
         entity.setHomeTeam(home);
         entity.setAwayTeam(away);
-        entity.setKickoff(Instant.parse(game.date()));
+
+        Instant kickoff = DateParsing.parseOrNull(game.date(), "MLB game " + game.id());
+if (kickoff == null) {
+    continue;
+}
+    entity.setKickoff(kickoff);
         entity.setLeague("MLB");
         entity.setExternalId(String.valueOf(game.id()));
 
@@ -145,7 +160,13 @@ public void syncEplFixtures(String apiKey) {
         FixtureEntity entity = new FixtureEntity();
         entity.setHomeTeam(home);
         entity.setAwayTeam(away);
-        entity.setKickoff(Instant.parse(match.utcDate()));
+
+
+Instant kickoff = DateParsing.parseOrNull(match.utcDate(), "EPL match " + match.id());
+if (kickoff == null) {
+    continue;
+}
+         entity.setKickoff(kickoff);
         entity.setLeague("EPL");
         entity.setExternalId(String.valueOf(match.id()));
 
