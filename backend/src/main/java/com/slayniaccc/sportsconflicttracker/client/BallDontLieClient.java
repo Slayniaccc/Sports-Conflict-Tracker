@@ -1,5 +1,5 @@
 package com.slayniaccc.sportsconflicttracker.client;
-
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -22,28 +22,18 @@ public class BallDontLieClient {
     private final RestClient restClient;
 
     public BallDontLieClient() {
-        this.restClient = RestClient.create("https://api.balldontlie.io");
+        this.restClient = RestClient.builder()
+            .baseUrl("https://api.balldontlie.io")
+            .defaultStatusHandler(
+                HttpStatusCode::isError,
+                (req, res) -> {
+                    throw new BallDontLieException(
+                        "BALLDONTLIE " + res.getStatusCode() + " on " + req.getURI());
+                })
+            .build();
     }
 
-    /**
-     * Walks every page of a BALLDONTLIE list endpoint and returns the combined results.
-     *
-     * BALLDONTLIE paginates with a cursor, not an offset: each response carries
-     * meta.next_cursor, and you pass that back as ?cursor=... to get the next page.
-     * meta.next_cursor is null on the final page, which is our stop signal.
-     *
-     * The caller supplies two small functions that pull the list and the cursor out
-     * of the response DTO. That's the only thing that differs between the six
-     * endpoints we call (teams and games, across three leagues), so keeping those
-     * pieces as arguments means we write the pagination loop once instead of six times.
-     *
-     * @param apiKey          raw API key — BALLDONTLIE does not want a "Bearer " prefix
-     * @param basePath        e.g. "/nba/v1/games"
-     * @param extraParams     query params besides per_page/cursor, e.g. {"seasons[]": "2026"}
-     * @param responseType    the DTO class representing one page
-     * @param dataExtractor   DTO -> List<T>      (the "data" array)
-     * @param cursorExtractor DTO -> Integer      (meta.next_cursor, or null when done)
-     */
+ 
     public <T, R> List<T> fetchAll(
             String apiKey,
             String basePath,
@@ -60,7 +50,7 @@ public class BallDontLieClient {
             // Trip the safety valve before making the request, so a cursor loop
             // can't get us past this point even once.
             if (++page > MAX_PAGES) {
-                throw new IllegalStateException(
+                throw new BallDontLieException(
                     "BALLDONTLIE pagination exceeded " + MAX_PAGES
                     + " pages for " + basePath + " — possible cursor loop");
             }
