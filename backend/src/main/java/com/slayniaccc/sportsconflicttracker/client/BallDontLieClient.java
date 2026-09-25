@@ -11,13 +11,10 @@ import java.util.function.Function;
 @Component
 public class BallDontLieClient {
 
-    // BALLDONTLIE caps every list endpoint at 100 rows per page unless you ask for less.
-    // Asking for the cap minimises the number of round trips.
     private static final int PER_PAGE = 100;
 
-    // Safety valve.This would never be hit, if it is = something wrong somewhere in the code.
-   
     private static final int MAX_PAGES = 200;
+      private static final long INTER_PAGE_DELAY_MS = 13_000;
 
     private final RestClient restClient;
 
@@ -96,8 +93,13 @@ public class BallDontLieClient {
                 break;
             }
             cursor = next;
+        try {
+                Thread.sleep(INTER_PAGE_DELAY_MS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
         }
-
         return all;
     }
 }
