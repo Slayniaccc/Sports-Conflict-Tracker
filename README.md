@@ -2,123 +2,198 @@
 
 Detects fixture clashes across your followed sports teams and scores which one to watch, with reasoning.
 
-## What it does
+## Overview
 
-You follow teams across multiple leagues. Sometimes two of them play at the same time. This app detects those clashes, scores which fixture matters more using a set of weighted rules (rivalry, playoff implications, current form, home/away), and explains *why*. Not just which score is higher, but the reasoning behind it.
+You follow teams across multiple leagues. When matches overlap, this app detects the clashes, scores which fixture takes priority using a set of weighted rules (rivalry, playoff implications, current form, home/away), and explains the reasoning behind the ranking.
 
-Conflict resolution is the core of the app. Built around it: team dashboards, kickoff alerts, calendar export, and historical stats (streaks, head-to-head records) across your followed teams.
+Core capabilities:
+- Cross-league fixture clash detection
+- Multi-factor conflict scoring with explanation strings
+- Team dashboards and kickoff alerts
+- Calendar export and head-to-head historical stats
 
 ## Stack
 
 - **Backend:** Java 21, Spring Boot 3.3, Postgres 16, Flyway
-- **Frontend:** TypeScript, Tailwind CSS
+- **Frontend:** TypeScript, Tailwind CSS *(not started)*
 - **Data:** BALLDONTLIE (NBA/NFL/MLB) and Football-Data.org (EPL)
 - **Infra:** Docker, GitHub Actions, deployed on Railway/Fly.io
 
 ## Architecture
 
-```
 backend/
-├── client/     : API clients (BALLDONTLIE, Football-Data.org) + response DTOs
-├── config/     : Spring Security, JWT filter/util
-├── controller/ : REST endpoints
-├── dto/        : API request/response shapes
-├── engine/     : ConflictEngine, aggregates rule outputs into a score
-├── entity/     : JPA entities (persistence layer)
-├── model/      : domain records (Team, Fixture, ConflictScore)
-├── repository/ : Spring Data JPA repositories
-├── rules/      : ImportanceRule interface + implementations
-├── service/    : orchestration layer (TeamSyncService, FixtureSyncService, etc.)
+├── client/           : API clients (BALLDONTLIE, Football-Data.org) + response DTOs
+├── config/           : Spring Security, JWT filter/util, ConflictEngine bean
+├── controller/       : REST endpoints
+├── dto/              : API request/response shapes
+├── engine/           : ConflictEngine, aggregates rule outputs into a score
+├── entity/           : JPA entities (persistence layer)
+├── model/            : domain records (Team, Fixture, ConflictScore)
+├── repository/       : Spring Data JPA repositories
+├── rules/            : ImportanceRule interface + implementations
+├── service/          : orchestration layer (TeamSyncService, FixtureSyncService, DateParsing, FixtureMapper)
 └── resources/
-    └── db/migration/  : Flyway migrations V1–V5
+    └── db/migration/ : Flyway migrations V1–V5
 
-frontend/       : TypeScript + Tailwind UI (not started)
-```
+frontend/             : TypeScript + Tailwind UI (not started)
 
-The rule engine is pure Java with no framework dependency. It can be tested in isolation and doesn't know or care that Spring, Postgres, or a frontend exist. Spring is layered around it, not through it.
+The rule engine is pure Java with no framework dependencies. Spring is layered around it to handle API and persistence concerns.
 
-### Data ingestion
+### Data Ingestion
 
-Fixture data flows through a shared pipeline regardless of source:
+Fixture data flows through a unified pipeline regardless of source:
 
-```
-Provider API  →  Client DTO  →  FixtureSyncService  →  TeamSyncService (lookup)  →  DB
-```
-
-Two providers, four leagues:
+`Provider API` → `Client DTO` → `FixtureSyncService` → `TeamSyncService (lookup)` → `DB`
 
 | League | Provider | Auth header | Response envelope | Field quirks |
 |--------|----------|-------------|-------------------|--------------|
-| NBA | BALLDONTLIE | `Authorization` | `{data: [...]}` | `datetime`, `visitor_team` |
-| NFL | BALLDONTLIE | `Authorization` | `{data: [...]}` | `date`, `visitor_team` |
-| MLB | BALLDONTLIE | `Authorization` | `{data: [...]}` | `date`, `away_team` |
+| NBA | BALLDONTLIE | `Authorization` | `{data: [...], meta: {...}}` | `datetime`, `visitor_team` |
+| NFL | BALLDONTLIE | `Authorization` | `{data: [...], meta: {...}}` | `date`, `visitor_team` |
+| MLB | BALLDONTLIE | `Authorization` | `{data: [...], meta: {...}}` | `date`, `away_team`, `season_type` |
 | EPL | Football-Data.org | `X-Auth-Token` | `{matches: [...]}` | `utcDate`, `homeTeam`/`awayTeam` |
 
-All four write to the same `fixture` table, disambiguated by a composite `(league, external_id)` unique constraint. Team IDs collide across leagues (NBA team 1 and NFL team 1 are different teams), so every lookup is league-scoped.
+All leagues write to the same `fixture` table, disambiguated by a composite `(league, external_id)` unique constraint. Lookups are league-scoped to prevent ID collisions across sports.
+
+### Conflict Scoring
+
+`ConflictEngine` aggregates active `ImportanceRule` implementations:
+
+- **RivalryRule** — +20 for rivalry matches
+- **PlayoffImplicationRule** — +25 for playoff implications
+- **HomeAdvantageRule** — +5 baseline fixture bonus
+
+Returns a `ConflictScore` containing the fixture, composite score, and explanation payload (e.g., `"RivalryRule: +20. PlayoffImplicationRule: +25. HomeAdvantageRule: +5."`).
+
+Endpoint: `GET /api/fixtures/scored` (optional `?league=` filter).
 
 ## Status
 
-🚧 In development.
+Backend feature-complete; frontend not started.
+
+### Completed
 
 - [x] Project scaffolding, JDK/Maven/JUnit toolchain
-- [x] Domain model + rule engine (pure Java, tested independently of Spring)
-- [x] Postgres schema + Flyway migrations (V1–V5)
-- [x] Spring Boot setup, JPA entities, repositories, initial REST endpoints
+- [x] Domain model and rule engine
+- [x] Postgres schema and Flyway migrations (V1–V5)
+- [x] Spring Boot API setup, JPA entities, repositories
 - [x] JWT authentication (registration/login, protected endpoints)
-- [x] NBA team sync via BALLDONTLIE
-- [x] NFL team sync via BALLDONTLIE
-- [x] MLB team sync via BALLDONTLIE
-- [x] EPL team sync via Football-Data.org
-- [x] NBA fixture sync
-- [x] NFL fixture sync
-- [x] MLB fixture sync
-- [x] EPL fixture sync
-- [x] Composite `(league, external_id)` constraints to prevent cross-league ID collisions
-- [ ] Pagination for BALLDONTLIE fixture sync (currently 25 games per league)
-- [ ] MLB `season_type` filter (spring training games currently mixed in)
-- [ ] Frontend
-- [ ] Deployment
-- [ ] Alerts + calendar export
-- [ ] Historical stats (streaks, head-to-head)
+- [x] Team sync for NBA, NFL, MLB, and EPL
+- [x] Fixture sync for all leagues
+- [x] Composite `(league, external_id)` constraints
+- [x] BALLDONTLIE cursor pagination
+- [x] MLB `season_type` filter
+- [x] EPL season consistency checks
+- [x] Null/malformed date handling
+- [x] Typed HTTP exceptions
+- [x] Per-sync rate limiting
+- [x] Sync idempotency tests
+- [x] ConflictEngine wired to `GET /api/fixtures/scored`
 
-## Known Issues / Pre-Frontend Checklist
+### Next Steps
 
-These are the known gaps to address before wiring the frontend.
+- [ ] Frontend (Vite + React + TypeScript + Tailwind)
+- [ ] Deployment setup (Railway or Fly.io)
+- [ ] Alerts and calendar export
+- [ ] Historical stats integration
 
-### Data completeness
-- [ ] **Pagination on BALLDONTLIE endpoints.** Currently only page 1 is fetched (25 games per league). NBA seasons have ~1230 games, NFL ~272, MLB ~2430. Real data is required for conflict detection to be useful.
-- [ ] **MLB `season_type` filter.** The MLB endpoint returns spring training, regular season, and postseason games in one response. Spring training games are currently mixed in. Add a filter at ingest time or add a `season_type` column to `fixture`.
-- [ ] **Cross-season team mismatches.** EPL team sync and fixture sync must use the same season (`season=2026`). If they diverge, fixtures reference team IDs that don't exist and the sync throws `Unknown home team`. Worth a shared `EPL_SEASON` constant.
+## Backend Maintenance & Technical Debt
 
 ### Reliability
-- [ ] **Null datetime guard.** `Instant.parse(game.datetime())` will NPE if the API ever returns `null`. Add a skip or throw.
-- [ ] **HTTP error handling.** `RestClient.retrieve().body(...)` returns `null` on non-2xx responses, causing silent failures. Consider `.onStatus(...)` to throw clearly, or wrap in an explicit null check.
-- [ ] **Rate limiting.** Football-Data.org free tier is 10 req/min. Currently no throttling — a full test-suite run can trip the limit.
-- [ ] **Test isolation.** Tests currently mutate the dev DB. Consider `@Transactional` on test classes, or a separate test database.
 
-### Test coverage
-- [ ] **Retry-idempotency tests.** Running the test suite twice should produce the same counts. Currently verified manually.
-- [ ] **Cross-league integrity test.** Assert that no fixture's `home_team.league` differs from `fixture.league`. Verified manually via SQL.
-- [ ] **`src/test/resources/application.yml`.** Tests currently require environment variables to be sourced before running. A test-specific config file (gitignored) would remove that dependency.
+- [ ] Global rate limiter (resolve concurrent sync 429 errors)
+- [ ] Test DB isolation (decouple tests from dev DB)
+- [ ] Transactional test wrappers
+- [ ] Test environment config (`src/test/resources/application-test.yml`)
+- [ ] Cross-league integrity tests
 
-### Schema
-- [ ] **`team.external_id` is `varchar(50)` while `fixture.external_id` is `varchar(255)`.** Inconsistent but not broken. Consider aligning.
-- [ ] **N+1 queries on fixture reads.** `FixtureEntity.homeTeam`/`awayTeam` are lazy-loaded. Consider `JOIN FETCH` queries or `@EntityGraph` for list endpoints.
+### Schema & Data Access
 
-### Security / secrets
-- [ ] **Rotate API keys.** Development keys should be rotated before any deployment.
-- [ ] **`.env` in `.gitignore`.** Verify it's ignored and never appears in `git log`.
-- [ ] **Remove any temporary sync-trigger code** (e.g. `CommandLineRunner`) before deployment.
+- [ ] Standardize `team.external_id` (varchar 50) and `fixture.external_id` (varchar 255)
+- [ ] Resolve N+1 queries on fixture reads (`JOIN FETCH` / `@EntityGraph`)
 
-### Code quality
-- [ ] **`spring.jpa.show-sql: false`.** Test output is currently dominated by Hibernate SQL logging.
-- [ ] **`spring.jpa.open-in-view: false`.** Spring warns about this on every startup. Recommended default for API-only apps.
-- [ ] **`@ColumnDefault` cleanups.** Redundant on primitive `boolean` fields.
+### Security
 
-## Further Work (Post-Frontend)
+- [ ] Revert `SecurityConfig` `permitAll` on `/api/fixtures/scored`
+- [ ] API key rotation and `.env` verification
 
-- Alerts (kickoff notifications, clash warnings)
-- Calendar export (iCal / Google Calendar integration)
-- Historical stats (streaks, head-to-head records)
-- User-followed team management UI
-- Deployment to Railway or Fly.io
+### Code Quality
+
+- [ ] Disable `spring.jpa.open-in-view`
+- [ ] Disable `spring.jpa.show-sql` for production profiles
+- [ ] Implement `equals`/`hashCode` for `TeamEntity` and `AppUserEntity`
+- [ ] Clean up redundant root-level `src/` directory
+
+## Proposed Design — Stake Model
+
+The current boolean flags (`isRivalry`, `isPlayoffImplication`) do not fit European formats (e.g., Premier League title races, European qualification spots, relegation battles).
+
+Planned refactor: replace booleans with a unified `FixtureStakes` enum on `FixtureEntity`:
+`NONE` | `RIVALRY` | `PLAYOFF` | `TITLE_RACE` | `EUROPEAN_QUAL` | `RELEGATION`
+
+- Store rivalry definitions in a dedicated `rivalry` table (`league`, `team_a_id`, `team_b_id`, `intensity`, `note`).
+- Implement standalone stake detection engines per league type.
+
+## Data Sources
+
+- **BALLDONTLIE** — `https://api.balldontlie.io` — NBA, NFL, MLB (5 req/min free tier)
+- **Football-Data.org** — `https://api.football-data.org/v4` — EPL (10 req/min free tier)
+
+## Frontend Roadmap
+
+### Phase 1 — UI/UX Design
+
+- [ ] Core screen wireframes
+- [ ] App navigation hierarchy
+- [ ] Fixture card layout (score and reasoning display)
+- [ ] Visual representation of overlapping kickoff times
+- [ ] Design system setup (palette, typography)
+
+### Phase 2 — Setup & Scaffolding
+
+- [ ] Initialize Vite + React + TypeScript
+- [ ] Configure Tailwind CSS
+- [ ] Setup React Router
+- [ ] Configure ESLint + Prettier
+- [ ] Project directory setup (`pages/`, `components/`, `api/`, `types/`, `hooks/`)
+
+### Phase 3 — Authentication
+
+- [ ] Login screen (`POST /api/users/login`, JWT persistence)
+- [ ] Register screen (`POST /api/users/register`)
+- [ ] HTTP client interceptors for `Authorization` header injection
+- [ ] Auth guards for protected routes
+
+### Phase 4 — Core Views
+
+- [ ] Scored fixture list view (`GET /api/fixtures/scored`)
+- [ ] League filtering (`?league=NBA`)
+- [ ] Priority sorting
+- [ ] Fixture detail modal / page with score breakdown
+- [ ] Loading, error, and empty states
+
+### Phase 5 — Team Preferences
+
+- [ ] Team selection interface (`GET /api/teams`)
+- [ ] Follow/unfollow team actions
+- [ ] Personalised fixture feed filtered by followed teams
+- [ ] Clash visualization for overlapping match times
+
+### Phase 6 — Interface Refinements
+
+- [ ] Layout responsiveness
+- [ ] Dark theme support
+- [ ] Skeleton loading states
+- [ ] Global error boundary and toast notifications
+
+### Phase 7 — Deployment
+
+- [ ] Frontend deployment (Vercel / Netlify)
+- [ ] Environment variable mapping
+- [ ] Backend CORS configuration
+- [ ] Production deployment to Railway / Fly.io
+
+## Future Enhancements
+
+- Kickoff notifications and clash alerts
+- Calendar synchronization (iCal / Google Calendar)
+- Historical head-to-head statistics
