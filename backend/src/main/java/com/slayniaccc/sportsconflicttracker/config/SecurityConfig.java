@@ -27,6 +27,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/api/users/register", "/api/users/login").permitAll()
+                .requestMatchers("/api/fixtures/scored").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/teams/sync/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/fixtures/sync/**").permitAll()
                 .anyRequest().authenticated()

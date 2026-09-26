@@ -33,6 +33,6 @@ public class ConflictEngine {
                          .append(". ");
             }
         }
-        return reasoning.isEmpty() ? "No significant factors." : reasoning.toString().trim();
+        return reasoning.length() == 0 ? "No significant factors." : reasoning.toString().trim();
     }
 }
