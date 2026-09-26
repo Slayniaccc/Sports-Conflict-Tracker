@@ -1,61 +1,79 @@
 package com.slayniaccc.sportsconflicttracker.service;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNbaTeamsResponse;
+import com.slayniaccc.sportsconflicttracker.client.BallDontLieNflTeam;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNflTeamsResponse;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieMlbTeamsResponse;
+import com.slayniaccc.sportsconflicttracker.client.BallDontLieNbaTeam;
 import com.slayniaccc.sportsconflicttracker.client.FootballDataClient;
 import com.slayniaccc.sportsconflicttracker.client.FootballDataTeamsResponse;
 import com.slayniaccc.sportsconflicttracker.entity.TeamEntity;
 import com.slayniaccc.sportsconflicttracker.repository.TeamRepository;
-import org.springframework.beans.factory.annotation.Value;
+import com.slayniaccc.sportsconflicttracker.client.BallDontLieClient;
+import com.slayniaccc.sportsconflicttracker.client.BallDontLieMlbTeam;
+
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
+
+import java.util.List;
+import java.util.Map;
 
 
 @Service
 public class TeamSyncService {
 
-    private final RestClient restClient;
+    private final BallDontLieClient bdlClient;
     private final TeamRepository teamRepository;
     private final FootballDataClient footballDataClient;
 
-    public TeamSyncService(TeamRepository teamRepository, FootballDataClient footballDataClient) {
-        this.restClient = RestClient.create("https://api.balldontlie.io");
+    public TeamSyncService(TeamRepository teamRepository, FootballDataClient footballDataClient, BallDontLieClient bdlClient) {
+       this.bdlClient = bdlClient;
         this.teamRepository = teamRepository;
         this.footballDataClient = footballDataClient;
     }
 
     public void syncNbaTeams(String apiKey) {
-        BallDontLieNbaTeamsResponse response = restClient.get()
-            .uri("/nba/v1/teams")
-            .header("Authorization", apiKey)
-            .retrieve() //network call occurs here
-            .body(BallDontLieNbaTeamsResponse.class);
+       List<BallDontLieNbaTeam> teams = bdlClient.fetchAll(
+            apiKey,
+            "/nba/v1/teams",
+            Map.of(),
+            BallDontLieNbaTeamsResponse.class,
+            BallDontLieNbaTeamsResponse::data,
+            r -> r.meta() == null ? null : r.meta().next_cursor()
+        );
 
-        for (var bdlTeam : response.data()) {
-            if (teamRepository.findByLeagueAndExternalId("NBA", String.valueOf(bdlTeam.id())).isPresent()) {
-    continue;
-}
-           // /nba/v1/teams returns 89 rows: 1–30 are current NBA franchises,
-// 37+ are defunct/historical/exhibition teams. Keep only current ones.
-              if (bdlTeam.id() < 1 || bdlTeam.id() > 30) {
+        for (var bdlTeam : teams) {
+            if (bdlTeam.id() < 1 || bdlTeam.id() > 30) {
                 continue;
-            } //iterates over parsed dto objects
-            TeamEntity entity = new TeamEntity(); //fresh entity
-            entity.setName(bdlTeam.full_name());//maps dto field to entity field
+            }
+
+            if (teamRepository.findByLeagueAndExternalId("NBA", String.valueOf(bdlTeam.id())).isPresent()) {
+                continue;
+            }
+
+            TeamEntity entity = new TeamEntity();
+            entity.setName(bdlTeam.full_name());
             entity.setLeague("NBA");
             entity.setExternalId(String.valueOf(bdlTeam.id()));
             teamRepository.save(entity);
         }
-    }
+       
+
+        }
+
+        
+      
 
        public void syncNflTeams(String apiKey) {
-        BallDontLieNflTeamsResponse response = restClient.get()
-            .uri("/nfl/v1/teams")
-            .header("Authorization", apiKey)
-            .retrieve() //network call occurs here
-            .body(BallDontLieNflTeamsResponse.class);
+        List<BallDontLieNflTeam> teams = bdlClient.fetchAll(
+            apiKey,
+            "/nfl/v1/teams",
+            Map.of(),
+            BallDontLieNflTeamsResponse.class,
+            BallDontLieNflTeamsResponse::data,
+            r -> r.meta() == null ? null : r.meta().next_cursor()
+        );
 
-        for (var bdlTeam : response.data()) {
+
+        for (var bdlTeam : teams) {
             if (teamRepository.findByLeagueAndExternalId("NFL", String.valueOf(bdlTeam.id())).isPresent()) {
     continue;
 }
@@ -69,13 +87,15 @@ public class TeamSyncService {
     }
 
          public void syncMlbTeams(String apiKey) {
-        BallDontLieMlbTeamsResponse response = restClient.get()
-            .uri("/mlb/v1/teams")
-            .header("Authorization", apiKey)
-            .retrieve() //network call occurs here
-            .body(BallDontLieMlbTeamsResponse.class);
-
-        for (var bdlTeam : response.data()) {
+         List<BallDontLieMlbTeam> teams = bdlClient.fetchAll(
+            apiKey,
+            "/mlb/v1/teams",
+            Map.of(),
+            BallDontLieMlbTeamsResponse.class,
+            BallDontLieMlbTeamsResponse::data,
+            r -> r.meta() == null ? null : r.meta().next_cursor()
+        );
+        for (var bdlTeam : teams) {
             if (teamRepository.findByLeagueAndExternalId("MLB", String.valueOf(bdlTeam.id())).isPresent()) {
     continue;
 }

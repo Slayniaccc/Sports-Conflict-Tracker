@@ -11,6 +11,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FixtureSyncServiceTest {
 
     @Autowired
+    TeamSyncService teamSyncService;
+
+    @Autowired
     FixtureSyncService fixtureSyncService;
 
     @Autowired
@@ -19,6 +22,8 @@ class FixtureSyncServiceTest {
     @Test
     void syncsRealNbaFixtures() {
         String apiKey = System.getenv("BALLDONTLIE_API_KEY");
+
+        teamSyncService.syncNbaTeams(apiKey);
         fixtureSyncService.syncNbaFixtures(apiKey);
 
         long count = fixtureRepository.count();

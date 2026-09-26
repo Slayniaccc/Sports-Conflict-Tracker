@@ -1,4 +1,9 @@
 package com.slayniaccc.sportsconflicttracker.client;
 import java.util.List;
-//fully deserialised list of the data
-public record BallDontLieNbaTeamsResponse(List<BallDontLieNbaTeam> data) {}
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record BallDontLieNbaTeamsResponse(
+    List<BallDontLieNbaTeam> data,
+    BallDontLieMeta meta
+) {}
