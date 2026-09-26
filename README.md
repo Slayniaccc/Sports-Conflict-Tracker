@@ -21,23 +21,31 @@ Core capabilities:
 
 ## Architecture
 
-backend/
-├── client/           : API clients (BALLDONTLIE, Football-Data.org) + response DTOs
-├── config/           : Spring Security, JWT filter/util, ConflictEngine bean
-├── controller/       : REST endpoints
-├── dto/              : API request/response shapes
-├── engine/           : ConflictEngine, aggregates rule outputs into a score
-├── entity/           : JPA entities (persistence layer)
-├── model/            : domain records (Team, Fixture, ConflictScore)
-├── repository/       : Spring Data JPA repositories
-├── rules/            : ImportanceRule interface + implementations
-├── service/          : orchestration layer (TeamSyncService, FixtureSyncService, DateParsing, FixtureMapper)
-└── resources/
-    └── db/migration/ : Flyway migrations V1–V5
+### Backend
 
-frontend/             : TypeScript + Tailwind UI (not started)
+The backend is organized into focused layers:
 
-The rule engine is pure Java with no framework dependencies. Spring is layered around it to handle API and persistence concerns.
+| Component | Responsibility |
+|-----------|----------------|
+| `client` | Integrates with BALLDONTLIE and Football-Data.org and maps their responses to DTOs |
+| `config` | Configures Spring Security, JWT utilities, and the `ConflictEngine` bean |
+| `controller` | Exposes the REST API |
+| `dto` | Defines API request and response shapes |
+| `engine` | Aggregates rule outputs into a conflict score |
+| `entity` | Defines JPA entities for persistence |
+| `model` | Defines domain records such as `Team`, `Fixture`, and `ConflictScore` |
+| `repository` | Provides Spring Data JPA repositories |
+| `rules` | Defines the `ImportanceRule` interface and its implementations |
+| `service` | Coordinates synchronization, date parsing, and fixture mapping |
+| `resources/db/migration` | Contains Flyway migrations V1–V5 |
+
+The rule engine is pure Java with no framework dependencies. Spring is layered
+around it to provide API and persistence concerns.
+
+### Frontend
+
+The planned frontend will use TypeScript and Tailwind CSS. Development has not
+started yet.
 
 ### Data Ingestion
 
