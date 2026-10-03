@@ -1,4 +1,4 @@
- import {useState} from "react";
+ import {useState, useEffect} from "react";
  
  
  
@@ -108,6 +108,24 @@ function FixtureCard(props: FixtureCardProps){
 }
 export default function App(){
   const[selectedLeague, setSelectedLeague] = useState("NBA");
+  const[fixtures, setFixtures] = useState<any[]>([]);
+  const[loading, setLoading] = useState(true);
+  const[error, setError] = useState< string | null>(null);
+  useEffect(() => {
+    fetch("http://localhost:8080/api/fixtures/scored")
+    .then((res) => {
+      if(!res.ok) throw new Error (`HTTP ${res.status}`);
+      return res.json();
+    })
+    .then((data) =>{
+      setFixtures(data);
+      setLoading(false)
+     })
+    .catch((err) => {
+      setError(err.message);
+      setLoading(false)
+    })
+  }, [])
 
   return(
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex">
@@ -138,6 +156,7 @@ export default function App(){
         <span>4</span>
       </div>
         </button>
+        
 
 
 
@@ -197,56 +216,27 @@ export default function App(){
 
         
   
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-8 overflow-y-auto">
        <p className="text-sm text-zinc-500 mb-1">NBA * Monday, September 28</p>
        <div className="flex items-baseline justify-between mb-6">
 <h1 className="text-3xl font-semibold tracking-tight">Today's Fixtures</h1>
-        <p className="text-sm text-zinc-500"> 4 games * 1 live</p>
+        <p className="text-sm text-zinc-500">{fixtures.length} games</p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <FixtureCard
-          time="19:30"
-          venue="TD Garden"
-          status="ft"
-          homeAbbr="BOS"
-          homeName="Boston Celtics"
-          homeScore={112}
-          awayAbbr="NYK"
-          awayName="New York Knicks"
-          awayScore={104}
-          />
-          <FixtureCard
-    time="21:00"
-    venue="Q3 4:12"
-    status="live"
-    liveScore="78-81"
-    homeAbbr="DEN"
-    homeName="Denver Nuggets"
-    homeScore={78}
-    awayAbbr="LAL"
-    awayName="Los Angeles Lakers"
-    awayScore={81}
-  />
-  <FixtureCard
-    time="22:00"
-    venue="Chase Center"
-    status="upcoming"
-    homeAbbr="GSW"
-    homeName="Golden State Warriors"
-    awayAbbr="PHX"
-    awayName="Phoenix Suns"
-  />
-  <FixtureCard
-    time="22:30"
-    venue="Kaseya Center"
-    status="upcoming"
-    homeAbbr="MIA"
-    homeName="Miami Heat"
-    awayAbbr="MIL"
-    awayName="Milwaukee Bucks"
-  />
-       </div>
-        </main>
-        </div>
-  )
+       
+       {loading && (
+        <p className="text-zinc-500">Loading fixtures...</p>
+       )}
+
+       {error &&(
+        <p className="text-red-500">Error: {error}</p>
+       )}
+
+      {!loading && !error && (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* rendering card logic goes here */}
+    </div>
+  )}
+</main>
+</div>
+)
 }
