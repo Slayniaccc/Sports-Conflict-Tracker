@@ -233,10 +233,30 @@ export default function App(){
 
       {!loading && !error && (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {/* rendering card logic goes here */}
+{fixtures.slice(0, 20).map((item) => {
+ const kickoff = new Date(item.fixture.kickoff);
+ const time = kickoff.toLocaleString([], {
+  hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+});
+return(
+  <FixtureCard
+   key={item.fixture.externalId}
+          time={time}
+          venue={item.fixture.homeTeam.name}
+          status="upcoming"
+          homeAbbr={item.fixture.homeTeam.name.slice(0, 3).toUpperCase()}
+          homeName={item.fixture.homeTeam.name}
+          awayAbbr={item.fixture.awayTeam.name.slice(0, 3).toUpperCase()}
+          awayName={item.fixture.awayTeam.name}
+         />
+      );
+    })}
+  </div>
+)}
+   
+      </main>
     </div>
-  )}
-</main>
-</div>
-)
+  );
 }
