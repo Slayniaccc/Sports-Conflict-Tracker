@@ -12,6 +12,7 @@ public class FixtureMapper {
 
     public Fixture toDomain(FixtureEntity entity) {
         return new Fixture(
+            entity.getId(),
             toDomain(entity.getHomeTeam()),
             toDomain(entity.getAwayTeam()),
             entity.getKickoff(),

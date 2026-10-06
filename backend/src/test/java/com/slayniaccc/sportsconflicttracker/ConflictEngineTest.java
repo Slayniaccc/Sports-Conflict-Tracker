@@ -28,7 +28,7 @@ class ConflictEngineTest {
         Team liverpool = new Team("Liverpool", League.EPL, "64");
 
         Fixture rivalryFixture = new Fixture(
-            manCity, liverpool, Instant.now(), true, false
+            1L,manCity, liverpool, Instant.now(), true, false
         );
 
         ConflictScore result = engine.evaluate(rivalryFixture);
@@ -42,7 +42,7 @@ class ConflictEngineTest {
         Team someTeam = new Team("Some Team", League.EPL, "99");
 
         Fixture ordinaryFixture = new Fixture(
-            manCity, someTeam, Instant.now(), false, false
+            1L,manCity, someTeam, Instant.now(), false, false
         );
 
         ConflictScore result = engine.evaluate(ordinaryFixture);
@@ -56,7 +56,7 @@ class ConflictEngineTest {
         Team liverpool = new Team("Liverpool", League.EPL, "64");
 
         Fixture rivalryFixture = new Fixture(
-            manCity, liverpool, Instant.now(), true, false
+            1L,manCity, liverpool, Instant.now(), true, false
         );
 
         ConflictScore result = engine.evaluate(rivalryFixture);
