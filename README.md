@@ -1,5 +1,7 @@
 # Sports Conflict Tracker
 
+[![CI](https://github.com/Slayniaccc/Sports-Conflict-Tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/Slayniaccc/Sports-Conflict-Tracker/actions/workflows/ci.yml)
+
 Detects fixture clashes across the teams you follow and scores which match to watch, with the reasoning spelled out.
 
 You follow teams in several leagues. When their matches overlap, the app finds the clash, scores each fixture with a set of weighted rules (rivalry, playoff implications, home advantage), and explains the ranking.
