@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import type { ScoredFixture } from "./types/fixture";
 import FixtureCard from "./components/FixtureCard";
 import Sidebar, { type League } from "./components/Sidebar";
+import  {toCardProps} from "./lib/toCardProps";
 
 
 export default function App(){
@@ -58,13 +59,7 @@ export default function App(){
 return(
   <FixtureCard
    key={item.fixture.id}
-          time={time}
-          venue={item.fixture.homeTeam.name}
-          status="upcoming"
-          homeAbbr={item.fixture.homeTeam.name.slice(0, 3).toUpperCase()}
-          homeName={item.fixture.homeTeam.name}
-          awayAbbr={item.fixture.awayTeam.name.slice(0, 3).toUpperCase()}
-          awayName={item.fixture.awayTeam.name}
+      {...toCardProps(item)}
          />
       );
     })}
