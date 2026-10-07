@@ -105,3 +105,26 @@ Planned refactor: replace booleans with a unified `FixtureStakes` enum on `Fixtu
 - Kickoff notifications and clash alerts
 - Calendar synchronization (iCal / Google Calendar)
 - Historical head-to-head statistics
+
+### Fixture status and live scores
+
+`/api/fixtures/scored` returns no status and no scores, so the frontend
+hardcodes `status: "upcoming"` and the FT/LIVE branches of StatusBadge are
+unreachable.
+
+Split by nature of the data:
+
+- **Derived at read time** — the `upcoming | live | ft` label, computed in the
+  response DTO from `kickoff` vs now plus a per-league duration (NBA ~2.5h,
+  NFL ~3.5h, MLB ~3h, EPL ~2h). No column, no migration; a stored status
+  column would go stale immediately since status is a function of time.
+  Approximate by nature — overtime and delays break the window.
+- **Stored, needs a refresh sync** — `homeScore`, `awayScore` and the
+  provider's own status. BallDontLie already returns `status_state`,
+  `home_team_score`, `visitor_team_score`; our DTOs drop them. Scores can't
+  be derived, and the current sync is one-shot, so this needs a second
+  narrow sync over games near now (frequent, cheap, UPDATE not INSERT) as
+  distinct from the bulk season sync (rare, 2:47, heavy quota).
+
+Unblocks: StatusBadge FT/LIVE branches, score rendering in TeamRow, honest
+past-fixture filtering, header accuracy.

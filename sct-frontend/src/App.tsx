@@ -4,6 +4,8 @@ import FixtureCard from "./components/FixtureCard";
 import Sidebar, { type League } from "./components/Sidebar";
 import  {toCardProps} from "./lib/toCardProps";
 
+//currently a stand in for a real status field,keeps games that recently kicked off on the page
+const IN_PROGRESS_GRACE_MS = 3 * 60 * 60 * 1000; 
 
 export default function App(){
   const[selectedLeague, setSelectedLeague] = useState<League>("NBA");
@@ -25,7 +27,12 @@ export default function App(){
       setLoading(false)
     })
   }, [])
-
+const now = new Date();
+const upcoming = fixtures.filter(
+  (item) =>
+    new Date(item.fixture.kickoff).getTime() >= now.getTime() - IN_PROGRESS_GRACE_MS
+);
+const visible = upcoming.slice(0, 20);
   return(
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex">
    <Sidebar selectedLeague={selectedLeague} onSelectLeague={setSelectedLeague} />
@@ -33,10 +40,11 @@ export default function App(){
         
   
       <main className="flex-1 p-8 overflow-y-auto">
-       <p className="text-sm text-zinc-500 mb-1">NBA * Monday, September 28</p>
+     
        <div className="flex items-baseline justify-between mb-6">
-<h1 className="text-3xl font-semibold tracking-tight">Today's Fixtures</h1>
-        <p className="text-sm text-zinc-500">{fixtures.length} games</p>
+<h1 className="text-3xl font-semibold tracking-tight">Upcoming Fixtures</h1>
+        <p className="text-sm text-zinc-500">
+          Showing {visible.length} of {upcoming.length}</p>
         </div>
        
        {loading && (
