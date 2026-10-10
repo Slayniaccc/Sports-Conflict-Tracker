@@ -3,6 +3,7 @@ import type { League, ScoredFixture } from "./types/fixture";
 import FixtureCard from "./components/FixtureCard";
 import Sidebar from "./components/Sidebar";
 import  {toCardProps} from "./lib/toCardProps";
+import { getScoredFixtures } from "./api/fixtures";
 
 //currently a stand in for a real status field,keeps games that recently kicked off on the page
 const IN_PROGRESS_GRACE_MS = 3 * 60 * 60 * 1000; 
@@ -41,11 +42,7 @@ export default function App(){
 }
   useEffect(() => {
      let cancelled = false;
-    fetch(`http://localhost:8080/api/fixtures/scored?league=${selectedLeague}`)
-    .then((res) => {
-      if(!res.ok) throw new Error (`HTTP ${res.status}`);
-      return res.json();
-    })
+        getScoredFixtures(selectedLeague)
     .then((data) =>{
       if(cancelled) return;
       setFixtures(data);
