@@ -1,6 +1,6 @@
 import type { FixtureStatus } from "../types/fixture";
 
-          interface FixtureCardProps{
+         export interface FixtureCardProps{
            time: string;
   venue: string;
   status: FixtureStatus;

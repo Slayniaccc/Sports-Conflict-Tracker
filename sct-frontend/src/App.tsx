@@ -1,41 +1,77 @@
 import { useState, useEffect } from "react";
-import type { ScoredFixture } from "./types/fixture";
+import type { League, ScoredFixture } from "./types/fixture";
 import FixtureCard from "./components/FixtureCard";
-import Sidebar, { type League } from "./components/Sidebar";
+import Sidebar from "./components/Sidebar";
 import  {toCardProps} from "./lib/toCardProps";
 
 //currently a stand in for a real status field,keeps games that recently kicked off on the page
 const IN_PROGRESS_GRACE_MS = 3 * 60 * 60 * 1000; 
+function dayLabel(kickoff: string){
+  return new Date(kickoff).toLocaleDateString([], {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+}
 
+//relies on the list already being sorted by kickoff
+function groupByDay(items: ScoredFixture[]){
+  const groups: { day: string; items: ScoredFixture[] }[] = [];
+  for (const item of items){
+    const day = dayLabel(item.fixture.kickoff);
+    const last = groups[groups.length - 1];
+    if(last && last.day === day){
+      last.items.push(item);
+    } else {
+      groups.push({ day, items: [item] });
+    }
+  }
+  return groups;
+}
 export default function App(){
   const[selectedLeague, setSelectedLeague] = useState<League>("NBA");
   const[fixtures, setFixtures] = useState<ScoredFixture[]>([]);
   const[loading, setLoading] = useState(true);
   const[error, setError] = useState< string | null>(null);
+  function handleSelectLeague(league: League){
+  if(league === selectedLeague) return;
+  setSelectedLeague(league);
+  setLoading(true);
+  setError(null);
+}
   useEffect(() => {
-    fetch("http://localhost:8080/api/fixtures/scored")
+     let cancelled = false;
+    fetch(`http://localhost:8080/api/fixtures/scored?league=${selectedLeague}`)
     .then((res) => {
       if(!res.ok) throw new Error (`HTTP ${res.status}`);
       return res.json();
     })
     .then((data) =>{
+      if(cancelled) return;
       setFixtures(data);
       setLoading(false)
      })
     .catch((err) => {
+      if(cancelled) return
       setError(err.message);
       setLoading(false)
     })
-  }, [])
+  return () => {
+    cancelled = true;
+  };
+}, [selectedLeague])
 const now = new Date();
 const upcoming = fixtures.filter(
   (item) =>
     new Date(item.fixture.kickoff).getTime() >= now.getTime() - IN_PROGRESS_GRACE_MS
+)
+.sort(
+  (a,b) => new Date(a.fixture.kickoff).getTime() - new Date(b.fixture.kickoff).getTime()
 );
 const visible = upcoming.slice(0, 20);
   return(
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex">
-   <Sidebar selectedLeague={selectedLeague} onSelectLeague={setSelectedLeague} />
+   <Sidebar selectedLeague={selectedLeague} onSelectLeague={handleSelectLeague} />
 
         
   
@@ -54,27 +90,25 @@ const visible = upcoming.slice(0, 20);
        {error &&(
         <p className="text-red-500">Error: {error}</p>
        )}
-
-      {!loading && !error && (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-{fixtures.slice(0, 20).map((item) => {
- const kickoff = new Date(item.fixture.kickoff);
- const time = kickoff.toLocaleString([], {
-  hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-});
-return(
-  <FixtureCard
-   key={item.fixture.id}
-      {...toCardProps(item)}
-         />
-      );
-    })}
-  </div>
+{!loading && !error && visible.length === 0 && (
+  <p className="text-zinc-500">No upcoming {selectedLeague} fixtures.</p>
 )}
-   
+{!loading && !error && groupByDay(visible).map((group) => (
+  <section key={group.day} className="mb-8">
+    <h2 className="text-sm font-medium text-zinc-400 mb-3">{group.day}</h2>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {group.items.map((item) => (
+        <FixtureCard
+        key={item.fixture.id}
+        {...toCardProps(item)}
+        />
+      ))}
+      </div>
+      </section>
+))}
+
       </main>
     </div>
   );
 }
+  

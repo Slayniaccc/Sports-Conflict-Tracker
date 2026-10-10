@@ -1,4 +1,4 @@
-export type League = "NBA"| "NFL" | "MLB" | "EPL"
+import type { League } from "../types/fixture";
 
 const LEAGUES : League[] = ["NBA", "NFL", "MLB", "EPL"]
 
@@ -16,7 +16,7 @@ return(
 <button
 key = {league}
 onClick={() => onSelectLeague(league)}
-className={`text-left px-3 py=2.5 rounded-md border-l-2 ${
+className={`text-left px-3 py-2.5 rounded-md border-l-2 ${
     selectedLeague === league
     ? "bg-zinc-900 border-amber-400"
     : "border-transparent hover:bg-zinc-900/50"
