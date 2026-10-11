@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend
+        working-directory: sct-backend
     steps:
       - uses: actions/checkout@v4
       - name: Set up Java 21
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend
+        working-directory: sct-backend
     services:
       postgres:
         image: postgres:16
