@@ -11,6 +11,8 @@ import type { FixtureStatus } from "../types/fixture";
   awayAbbr: string;
   awayName: string;
   awayScore?: number;
+   score: number;
+  reasoning: string;
           }
 interface TeamRowProps{
  abbr: string;
@@ -80,6 +82,8 @@ export default function FixtureCard(props: FixtureCardProps){
     awayAbbr,
     awayName,
     awayScore,
+    score,
+    reasoning,
   } = props;
   return(
      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition-colors">
@@ -88,6 +92,7 @@ export default function FixtureCard(props: FixtureCardProps){
           <span className="text-zinc-100 font-medium">{time}</span>
           <span className="text-zinc-500">{venue}</span>
         </div>
+   
         <StatusBadge
           status={status}
           liveScore={liveScore}
@@ -100,6 +105,7 @@ export default function FixtureCard(props: FixtureCardProps){
       <div className="border-t border-zinc-800/60 my-2" />
 
       <TeamRow abbr={awayAbbr} name={awayName} label="Away" score={awayScore} />
+      <p className="mt-3 pt-3 border-t border-zinc-800/60 text-xs text-zinc-500">{reasoning}</p>
     </div>
   )
 }
