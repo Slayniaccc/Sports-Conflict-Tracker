@@ -1,6 +1,5 @@
 import type {League, ScoredFixture} from "../types/fixture";
-
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080"
+import { API_URL } from "./config";
 
 export async function getScoredFixtures(league: League): Promise<ScoredFixture[]>{
     const res = await fetch(`${API_URL}/api/fixtures/scored?league=${league}`);

@@ -21,5 +21,7 @@ export function toCardProps(item: ScoredFixture) : FixtureCardProps{
     homeName: item.fixture.homeTeam.name,
     awayAbbr: item.fixture.awayTeam.name.slice(0, 3).toUpperCase(),
     awayName: item.fixture.awayTeam.name,
+    score: item.score,
+    reasoning: item.reasoning,
   }
 }
