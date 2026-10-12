@@ -1,5 +1,5 @@
 import {useState, type SubmitEvent} from 'react'
-import {useNavigate} from "react-router";
+import {useNavigate, Link} from "react-router";
 import {registerUser} from "../api/auth";
 
 export default function Register(){
@@ -30,7 +30,14 @@ setLoading(false)
 
      </button>
       {error && <p className="text-red-500 text-sm">{error}</p>}
+<p className="text-sm text-zinc-500 mt-2">
+  Already have an account?{" "}
+  <Link to="/login" className="text-zinc-100 underline">
+    Sign in
+  </Link>
+</p>
         </form>
+        
     )
 
 
