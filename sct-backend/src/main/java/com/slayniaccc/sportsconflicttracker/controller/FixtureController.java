@@ -1,6 +1,8 @@
 package com.slayniaccc.sportsconflicttracker.controller;
 
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import com.slayniaccc.sportsconflicttracker.entity.FixtureEntity;
 import com.slayniaccc.sportsconflicttracker.model.ConflictScore;
@@ -54,7 +56,15 @@ return fixtures.stream()
 .map(conflictEngine::evaluate)
 .toList();
          }
-    
+@GetMapping("/api/fixtures/scored/{id}")
+public ResponseEntity<ConflictScore> getScoredFixture(@PathVariable Long id){
+    return fixtureRepository.findById(id)
+    .map(fixtureMapper:: toDomain)
+    .map(conflictEngine::evaluate)
+    .map(ResponseEntity::ok)
+    .orElse(ResponseEntity.notFound().build());
+}
+
 
       @PostMapping("/api/fixtures/sync/nba")
     public String syncNba() {
