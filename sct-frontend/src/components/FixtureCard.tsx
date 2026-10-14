@@ -42,6 +42,7 @@ function TeamRow({abbr, name, label, score} : TeamRowProps){
         <span className="text-2xl font-semibold tabular-nums">{score}</span>
       )}
       </div>
+      
   );
 }
 function StatusBadge({status, liveScore, homeScore, awayScore} : StatusBadgeProps){
@@ -86,13 +87,15 @@ export default function FixtureCard(props: FixtureCardProps){
     reasoning,
   } = props;
   return(
-     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition-colors">
-      <div className="flex items-center justify-between mb-4 text-xs">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition-colors">
+     <div className="flex items-center justify-between mb-4 text-xs">
         <div className="flex items-center gap-2">
           <span className="text-zinc-100 font-medium">{time}</span>
           <span className="text-zinc-500">{venue}</span>
         </div>
-   
+
+        <div className="flex items-center gap-2">
+        <ScoreBadge score={score} />
         <StatusBadge
           status={status}
           liveScore={liveScore}
@@ -100,6 +103,8 @@ export default function FixtureCard(props: FixtureCardProps){
           awayScore={awayScore}
         />
       </div>
+      </div>
+      
        <TeamRow abbr={homeAbbr} name={homeName} label="Home" score={homeScore} />
 
       <div className="border-t border-zinc-800/60 my-2" />
@@ -107,5 +112,17 @@ export default function FixtureCard(props: FixtureCardProps){
       <TeamRow abbr={awayAbbr} name={awayName} label="Away" score={awayScore} />
       <p className="mt-3 pt-3 border-t border-zinc-800/60 text-xs text-zinc-500">{reasoning}</p>
     </div>
+
+  )
+}
+
+interface ScoreBadgeProps{
+  score: number;
+}
+function ScoreBadge({score}: ScoreBadgeProps){
+  return(
+    <span
+    title="Conflict score"
+    className="px-2 py-0.5 rounded font-mono text-[0.7rem] bg-zinc-800 text-zinc-300 border border-zinc-700">{score}</span>
   )
 }
