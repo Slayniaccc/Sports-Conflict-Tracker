@@ -1,6 +1,8 @@
+import { Link } from "react-router";
 import type { FixtureStatus } from "../types/fixture";
 
          export interface FixtureCardProps{
+          id:number,
            time: string;
   venue: string;
   status: FixtureStatus;
@@ -73,6 +75,7 @@ if(status === "live"){
 }
 export default function FixtureCard(props: FixtureCardProps){
     const {
+      id,
     time,
     venue,
     status,
@@ -87,7 +90,8 @@ export default function FixtureCard(props: FixtureCardProps){
     reasoning,
   } = props;
   return(
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition-colors">
+    <Link to={`/fixtures/${id}`}
+     className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition-colors">
      <div className="flex items-center justify-between mb-4 text-xs">
         <div className="flex items-center gap-2">
           <span className="text-zinc-100 font-medium">{time}</span>
@@ -111,7 +115,7 @@ export default function FixtureCard(props: FixtureCardProps){
 
       <TeamRow abbr={awayAbbr} name={awayName} label="Away" score={awayScore} />
       <p className="mt-3 pt-3 border-t border-zinc-800/60 text-xs text-zinc-500">{reasoning}</p>
-    </div>
+    </Link>
 
   )
 }
