@@ -76,4 +76,15 @@ public String syncEpl() {
     fixtureSyncService.syncEplFixtures(footballDataApiKey);
     return "EPL fixtures synced";
 }
+@PostMapping("/api/fixtures/sync/nfl")
+public String syncNfl() {
+    fixtureSyncService.syncNflFixtures(bdlApiKey);
+    return "NFL fixtures synced";
+}
+
+@PostMapping("/api/fixtures/sync/mlb")
+public String syncMlb() {
+    fixtureSyncService.syncMlbFixtures(bdlApiKey);
+    return "MLB fixtures synced";
+}
 }

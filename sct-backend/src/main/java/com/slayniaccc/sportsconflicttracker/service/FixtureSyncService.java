@@ -1,6 +1,6 @@
 package com.slayniaccc.sportsconflicttracker.service;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieClient;
-
+import com.slayniaccc.sportsconflicttracker.engine.Rivalries;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNbaGame;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNbaGamesResponse;
 
@@ -67,6 +67,7 @@ if (kickoff == null) {
             entity.setKickoff(kickoff);
             entity.setLeague("NBA");
             entity.setExternalId(String.valueOf(game.id()));
+            entity.setRivalry(Rivalries.isRivalry("NBA", home.getName(), away.getName()));
             fixtureRepository.save(entity);
         }
     }
@@ -101,6 +102,7 @@ if (kickoff == null) {
 }
               entity.setKickoff(kickoff);
             entity.setExternalId(String.valueOf(game.id()));
+                        entity.setRivalry(Rivalries.isRivalry("NFL", home.getName(), away.getName()));
             fixtureRepository.save(entity);
         }
     }
@@ -108,7 +110,7 @@ public void syncMlbFixtures(String apiKey) {
      List<BallDontLieMlbGame> games = bdlClient.fetchAll(
             apiKey,
             "/mlb/v1/games",
-            Map.of("seasons[]", "2025"),
+            Map.of("seasons[]", "2025", "season_type", "regular"),
             BallDontLieMlbGamesResponse.class,
             BallDontLieMlbGamesResponse::data,
             r -> r.meta() == null ? null : r.meta().next_cursor()
@@ -118,14 +120,17 @@ public void syncMlbFixtures(String apiKey) {
         if (fixtureRepository.findByLeagueAndExternalId("MLB", String.valueOf(game.id())).isPresent()) {
             continue;
         }
-if ("spring_training".equalsIgnoreCase(game.season_type())) {
-    continue;
-}
+
         TeamEntity home = teamRepository.findByLeagueAndExternalId("MLB", String.valueOf(game.home_team().id()))
-            .orElseThrow(() -> new IllegalStateException("Unknown home team: " + game.home_team().id()));
+            .orElse(null);
 
         TeamEntity away = teamRepository.findByLeagueAndExternalId("MLB", String.valueOf(game.away_team().id()))
-            .orElseThrow(() -> new IllegalStateException("Unknown away team: " + game.away_team().id()));
+            .orElse(null);
+        
+            if(home == null || away == null){
+            //BDL sends -1 for TBD slots,i.e postseason fixtures,better to skip than fail entire sync
+                 continue;
+            }
 
         FixtureEntity entity = new FixtureEntity();
         entity.setHomeTeam(home);
@@ -138,7 +143,7 @@ if (kickoff == null) {
     entity.setKickoff(kickoff);
         entity.setLeague("MLB");
         entity.setExternalId(String.valueOf(game.id()));
-
+            entity.setRivalry(Rivalries.isRivalry("MLB", home.getName(), away.getName()));
         fixtureRepository.save(entity);
     }
 }
@@ -169,7 +174,7 @@ if (kickoff == null) {
          entity.setKickoff(kickoff);
         entity.setLeague("EPL");
         entity.setExternalId(String.valueOf(match.id()));
-
+            entity.setRivalry(Rivalries.isRivalry("EPL", home.getName(), away.getName()));
         fixtureRepository.save(entity);
     }
 }

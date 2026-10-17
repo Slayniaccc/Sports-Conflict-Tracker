@@ -14,7 +14,7 @@ public class BallDontLieClient {
     private static final int PER_PAGE = 100;
 
     private static final int MAX_PAGES = 200;
-      private static final long INTER_PAGE_DELAY_MS = 13_000;
+      private static final long INTER_PAGE_DELAY_MS = 0;
 
     private final RestClient restClient;
 
@@ -87,19 +87,29 @@ public class BallDontLieClient {
                 all.addAll(items);
             }
 
+//sleep between pages,so it doesn't 429 mid-sync
+//at a later date,I either remove this feature for mlb or buy ALL-Star tier access at least once
+      
             // null next_cursor = last page. Anything else = keep going.
             Integer next = cursorExtractor.apply(response);
             if (next == null) {
                 break;
             }
-            cursor = next;
+
+     //throttle for when another page comes.   
+         if(INTER_PAGE_DELAY_MS > 0){
         try {
                 Thread.sleep(INTER_PAGE_DELAY_MS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
-            }
+         }
+        
+            
         }
-        return all;
+    cursor = next;
     }
+   return all;
+    }
+   
 }

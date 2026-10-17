@@ -7,6 +7,7 @@ export function toCardProps(item: ScoredFixture) : FixtureCardProps{
 
 
   return{
+    id: item.fixture.id,
     time:kickoff.toLocaleString([], {
         hour: "2-digit",
         minute: "2-digit",

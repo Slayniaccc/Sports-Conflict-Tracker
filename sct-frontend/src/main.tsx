@@ -3,9 +3,10 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router'
 import Login from "./pages/Login.tsx"
 import Register from "./pages/Register.tsx"
+import FixtureDetail from "./pages/FixtureDetail.tsx"
 import './index.css'
 import App from './App.tsx'
-import FixtureDetail from "./pages/FixtureDetail.tsx"
+
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
