@@ -4,12 +4,14 @@ import { BrowserRouter, Routes, Route } from 'react-router'
 import Login from "./pages/Login.tsx"
 import Register from "./pages/Register.tsx"
 import FixtureDetail from "./pages/FixtureDetail.tsx"
+import { AuthProvider } from "./contexts/AuthContext"
 import './index.css'
 import App from './App.tsx'
 
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <AuthProvider>
     <BrowserRouter>
     <Routes>
 <Route path="/" element={<App />} />
@@ -19,6 +21,7 @@ createRoot(document.getElementById('root')!).render(
     </Routes>
    
     </BrowserRouter>
+    </AuthProvider>
       </StrictMode>,
    
 )

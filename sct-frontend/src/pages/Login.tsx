@@ -1,6 +1,7 @@
 import {useState, type SubmitEvent} from 'react'
 import {useNavigate, Link} from "react-router";
 import {loginUser} from "../api/auth";
+import {useAuth} from "../contexts/AuthContext"
 
 
 export default function Login(){
@@ -9,6 +10,7 @@ export default function Login(){
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null)
     const navigate = useNavigate();
+    const{login} = useAuth();
 
     async function handleSubmit(e: SubmitEvent){
             e.preventDefault();
@@ -17,7 +19,7 @@ export default function Login(){
 
    try{
     const response = await loginUser(email, password);
-    localStorage.setItem("token", response.token)
+  login(response.user, response.token)
     navigate("/");
    } catch (err){
      setError(err instanceof Error ? err.message : "Something went wrong");
