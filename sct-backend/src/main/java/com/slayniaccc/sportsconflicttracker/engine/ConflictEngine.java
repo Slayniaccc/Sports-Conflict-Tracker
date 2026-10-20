@@ -11,13 +11,24 @@ public class ConflictEngine {
     public ConflictEngine(List<ImportanceRule> rules) {
         this.rules = rules;
     }
-
     public ConflictScore evaluate(Fixture fixture) {
+    return evaluate(fixture, null);
+}
+
+    public ConflictScore evaluate(Fixture fixture, String favoriteTeamExternalId) {
         int total = rules.stream()
             .mapToInt(rule -> rule.score(fixture))
             .sum();
 
         String reasoning = buildReasoning(fixture);
+
+        if(favoriteTeamExternalId != null &&
+            (favoriteTeamExternalId.equals(fixture.homeTeam().externalId()) ||
+            favoriteTeamExternalId.equals(fixture.awayTeam().externalId()))){
+                total += 15;
+                reasoning = reasoning + " FavoriteTeamRule: +15";
+            }
+        
 
         return new ConflictScore(fixture, total, reasoning);
     }

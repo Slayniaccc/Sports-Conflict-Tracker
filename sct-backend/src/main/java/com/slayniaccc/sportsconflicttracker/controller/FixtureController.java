@@ -1,11 +1,12 @@
 package com.slayniaccc.sportsconflicttracker.controller;
 
-
+import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import com.slayniaccc.sportsconflicttracker.entity.FixtureEntity;
 import com.slayniaccc.sportsconflicttracker.model.ConflictScore;
+import com.slayniaccc.sportsconflicttracker.repository.AppUserRepository;
 import com.slayniaccc.sportsconflicttracker.repository.FixtureRepository;
 import com.slayniaccc.sportsconflicttracker.service.FixtureSyncService;
 import com.slayniaccc.sportsconflicttracker.service.FixtureMapper;
@@ -24,6 +25,7 @@ public class FixtureController {
     private final FixtureSyncService fixtureSyncService;
     private final ConflictEngine conflictEngine;
 private final FixtureMapper fixtureMapper;
+private final AppUserRepository userRepository;
 
         @Value("${balldontlie.api-key}")
     private String bdlApiKey;
@@ -32,11 +34,12 @@ private final FixtureMapper fixtureMapper;
     private String footballDataApiKey;
 
 
-    public FixtureController(FixtureRepository fixtureRepository, FixtureSyncService fixtureSyncService, ConflictEngine conflictEngine, FixtureMapper fixtureMapper) {
+    public FixtureController(FixtureRepository fixtureRepository, FixtureSyncService fixtureSyncService, ConflictEngine conflictEngine, FixtureMapper fixtureMapper, AppUserRepository userRepository) {
         this.fixtureRepository = fixtureRepository;
         this.fixtureSyncService = fixtureSyncService;
         this.conflictEngine = conflictEngine;
         this.fixtureMapper = fixtureMapper;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/api/fixtures")
@@ -47,20 +50,47 @@ private final FixtureMapper fixtureMapper;
 
     @GetMapping("/api/fixtures/scored")
     public List<ConflictScore> getScoredFixtures(
-         @RequestParam(value = "league", required = false) String league) {
+         @RequestParam(value = "league", required = false) String league, Authentication auth) {
+
+
+String favExternalId = null;
+if(auth != null){
+    favExternalId = userRepository.findByEmail(auth.getName())
+    .map(u -> u.getFavoriteTeam() != null
+    ? u.getFavoriteTeam().getExternalId()
+    :null)
+.orElse(null);
+}
+final String finalFavId = favExternalId;
+
 List<FixtureEntity> fixtures = (league == null)
 ? fixtureRepository.findAll()
 : fixtureRepository.findByLeague(league.toUpperCase());
 return fixtures.stream()
 .map(fixtureMapper::toDomain)
-.map(conflictEngine::evaluate)
+.map(f -> conflictEngine.evaluate(f, finalFavId))
 .toList();
          }
+
+
 @GetMapping("/api/fixtures/scored/{id}")
-public ResponseEntity<ConflictScore> getScoredFixture(@PathVariable Long id){
+public ResponseEntity<ConflictScore> getScoredFixture(@PathVariable Long id
+    ,Authentication auth
+){
+
+
+        String favExternalId = null;
+        if (auth != null) {
+            favExternalId = userRepository.findByEmail(auth.getName())
+                .map(u -> u.getFavoriteTeam() != null
+                    ? u.getFavoriteTeam().getExternalId()
+                    : null)
+                .orElse(null);
+        }
+        final String finalFavId = favExternalId;
     return fixtureRepository.findById(id)
     .map(fixtureMapper:: toDomain)
-    .map(conflictEngine::evaluate)
+    .map( f -> conflictEngine.evaluate(f, finalFavId))
     .map(ResponseEntity::ok)
     .orElse(ResponseEntity.notFound().build());
 }

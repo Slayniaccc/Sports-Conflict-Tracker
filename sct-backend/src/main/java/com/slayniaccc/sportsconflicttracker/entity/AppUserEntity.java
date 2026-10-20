@@ -28,6 +28,10 @@ public class AppUserEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @ManyToOne
+    @JoinColumn(name = "favorite_team_id")
+    private TeamEntity favoriteTeam;
+
     public AppUserEntity() {}
 
     public Long getId() { return id; }
@@ -41,4 +45,6 @@ public class AppUserEntity {
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+    public TeamEntity getFavoriteTeam() {return favoriteTeam;}
+    public void setFavoriteTeam(TeamEntity favoriteTeam) {this.favoriteTeam = favoriteTeam;}
 }
