@@ -16,6 +16,9 @@ export default function FixtureDetail() {
             setLoading(true);
             setError(null);
            
+             const token = localStorage.getItem("token");
+    const headers : HeadersInit = token ?{Authorisation : `Bearer ${token}`} : {};
+    
             fetch(`${API_URL}/api/fixtures/scored/${id}`)
             .then((res) =>{
                   
