@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 import java.time.Instant;
 
+
 @Entity
 @Table(name = "app_user")
 public class AppUserEntity {
