@@ -30,6 +30,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/fixtures/scored/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/teams/sync/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/fixtures/sync/**").permitAll()
+                 .requestMatchers(HttpMethod.GET, "/api/teams/**").permitAll() 
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
