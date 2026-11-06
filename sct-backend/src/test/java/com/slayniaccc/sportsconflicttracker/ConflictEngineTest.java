@@ -24,8 +24,8 @@ class ConflictEngineTest {
 
     @Test
     void rivalryFixtureScoresHigherThanNonRivalry() {
-        Team manCity = new Team("Manchester City", League.EPL, "65");
-        Team liverpool = new Team("Liverpool", League.EPL, "64");
+        Team manCity = new Team(1L, "Manchester City", League.EPL, "65");
+        Team liverpool = new Team(2L, "Liverpool", League.EPL, "64");
 
         Fixture rivalryFixture = new Fixture(
             1L,manCity, liverpool, Instant.now(), true, false
@@ -38,8 +38,8 @@ class ConflictEngineTest {
 
     @Test
     void nonRivalryNonPlayoffFixtureScoresLow() {
-        Team manCity = new Team("Manchester City", League.EPL, "65");
-        Team someTeam = new Team("Some Team", League.EPL, "99");
+        Team manCity = new Team(1L, "Manchester City", League.EPL, "65");
+        Team someTeam = new Team(3L, "Some Team", League.EPL, "99");
 
         Fixture ordinaryFixture = new Fixture(
             1L,manCity, someTeam, Instant.now(), false, false
@@ -52,8 +52,8 @@ class ConflictEngineTest {
 
     @Test
     void reasoningMentionsRivalryWhenApplicable() {
-        Team manCity = new Team("Manchester City", League.EPL, "65");
-        Team liverpool = new Team("Liverpool", League.EPL, "64");
+        Team manCity = new Team(1L, "Manchester City", League.EPL, "65");
+        Team liverpool = new Team(2L, "Liverpool", League.EPL, "64");
 
         Fixture rivalryFixture = new Fixture(
             1L,manCity, liverpool, Instant.now(), true, false

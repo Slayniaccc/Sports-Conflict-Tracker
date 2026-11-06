@@ -23,6 +23,7 @@ public class FixtureMapper {
 
     public Team toDomain(TeamEntity entity) {
         return new Team(
+            entity.getId(),
             entity.getName(),
             League.valueOf(entity.getLeague()),
             entity.getExternalId()
