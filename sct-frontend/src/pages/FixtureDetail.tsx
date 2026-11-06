@@ -1,6 +1,6 @@
 import {useParams, Link} from "react-router";
 import {useState, useEffect} from "react";
-import {API_URL} from "../api/config"
+import {API_URL, authHeaders} from "../api/config"
 import type {ScoredFixture} from "../types/fixture"
 
  
@@ -15,11 +15,8 @@ export default function FixtureDetail() {
             let cancelled = false;
             setLoading(true);
             setError(null);
-           
-             const token = localStorage.getItem("token");
-    const headers : HeadersInit = token ?{Authorisation : `Bearer ${token}`} : {};
-    
-            fetch(`${API_URL}/api/fixtures/scored/${id}`)
+     
+            fetch(`${API_URL}/api/fixtures/scored/${id}`, {headers: authHeaders()})
             .then((res) =>{
                   
                 if(!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -68,7 +65,19 @@ export default function FixtureDetail() {
                             {fixture.fixture.homeTeam.league}
                         </p>
                         <h1 className="text-2xl font-semibold tracking-tight">
-                            {fixture.fixture.homeTeam.name} vs {fixture.fixture.awayTeam.name}
+                          <Link
+                          to={`/teams/${fixture.fixture.homeTeam.id}`}
+                          className="hover:text-amber-400 transition-colors"
+                          >
+                            {fixture.fixture.homeTeam.name}
+                          </Link>
+                          <span className="text-zinc-500"> vs </span>
+                          <Link
+                          to={`/teams/${fixture.fixture.awayTeam.id}`}
+                          className="hover:text-amber-400 transition-colors"
+                          >
+                            {fixture.fixture.awayTeam.name}
+                          </Link>
                         </h1>
                     </div>
 

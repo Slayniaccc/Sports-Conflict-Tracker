@@ -7,6 +7,7 @@ import FixtureDetail from "./pages/FixtureDetail.tsx"
 import { AuthProvider } from "./contexts/AuthContext"
 import './index.css'
 import App from './App.tsx'
+import TeamDetail from "./pages/TeamDetail";
 
 
 createRoot(document.getElementById('root')!).render(
@@ -18,6 +19,7 @@ createRoot(document.getElementById('root')!).render(
 <Route path="/login" element={<Login />} />
 <Route path="/register" element={<Register />} />
 <Route path="/fixtures/:id" element={<FixtureDetail />} />
+<Route path="/teams/:id" element={<TeamDetail />} />
     </Routes>
    
     </BrowserRouter>
