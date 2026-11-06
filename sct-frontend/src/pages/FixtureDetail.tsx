@@ -65,7 +65,19 @@ export default function FixtureDetail() {
                             {fixture.fixture.homeTeam.league}
                         </p>
                         <h1 className="text-2xl font-semibold tracking-tight">
-                            {fixture.fixture.homeTeam.name} vs {fixture.fixture.awayTeam.name}
+                          <Link
+                          to={`/teams/${fixture.fixture.homeTeam.id}`}
+                          className="hover:text-amber-400 transition-colors"
+                          >
+                            {fixture.fixture.homeTeam.name}
+                          </Link>
+                          <span className="text-zinc-500"> vs </span>
+                          <Link
+                          to={`/teams/${fixture.fixture.awayTeam.id}`}
+                          className="hover:text-amber-400 transition-colors"
+                          >
+                            {fixture.fixture.awayTeam.name}
+                          </Link>
                         </h1>
                     </div>
 
