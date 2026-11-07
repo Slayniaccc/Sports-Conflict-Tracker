@@ -1,9 +1,17 @@
 package com.slayniaccc.sportsconflicttracker.engine;
+
+
 import com.slayniaccc.sportsconflicttracker.model.ConflictScore;
+import com.slayniaccc.sportsconflicttracker.model.Factor;
 import com.slayniaccc.sportsconflicttracker.model.Fixture;
+import com.slayniaccc.sportsconflicttracker.model.Team;
 import com.slayniaccc.sportsconflicttracker.rules.ImportanceRule;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ConflictEngine {
     private final List<ImportanceRule> rules; //
@@ -16,34 +24,41 @@ public class ConflictEngine {
 }
 
     public ConflictScore evaluate(Fixture fixture, String favoriteTeamExternalId) {
-        int total = rules.stream()
-            .mapToInt(rule -> rule.score(fixture))
-            .sum();
+        List<Factor> factors = new ArrayList<>();
+        for(ImportanceRule rule: rules){
+            rule.evaluate(fixture).ifPresent(factors::add);
+        }
+        favoriteTeamFactor(fixture, favoriteTeamExternalId).ifPresent(factors::add);
 
-        String reasoning = buildReasoning(fixture);
 
-        if(favoriteTeamExternalId != null &&
-            (favoriteTeamExternalId.equals(fixture.homeTeam().externalId()) ||
-            favoriteTeamExternalId.equals(fixture.awayTeam().externalId()))){
-                total += 15;
-                reasoning = reasoning + " FavoriteTeamRule: +15";
-            }
+        int total = factors.stream()
+            .mapToInt(Factor::points).sum();
+         
+
+        String reasoning = factors.stream()
+        .sorted(Comparator.comparingInt(Factor::points).reversed())
+        .map(f -> f.reason() + " (+" + f.points() + ")")
+        .collect(Collectors.joining(" · "));
+
+     
         
 
-        return new ConflictScore(fixture, total, reasoning);
+        return new ConflictScore(fixture, total, reasoning.isEmpty() ? "No significant factors." : reasoning);
     }
 
-    private String buildReasoning(Fixture fixture) {
-        StringBuilder reasoning = new StringBuilder();
-        for (ImportanceRule rule : rules) {
-            int ruleScore = rule.score(fixture);
-            if (ruleScore > 0) {
-                reasoning.append(rule.getClass().getSimpleName())
-                         .append(": +")
-                         .append(ruleScore)
-                         .append(". ");
-            }
+    private Optional<Factor> favoriteTeamFactor(Fixture fixture, String favoriteId) {
+       if(favoriteId == null) return Optional.empty();
+        Team home = fixture.homeTeam();
+        Team away = fixture.awayTeam();
+
+        if(favoriteId.equals(home.externalId())){
+            return Optional.of(new Factor(15, "Your team " + home.name() + " is at home to " + away.name()));
         }
-        return reasoning.length() == 0 ? "No significant factors." : reasoning.toString().trim();
+         if (favoriteId.equals(away.externalId())) {
+            return Optional.of(new Factor(15,
+                "Your team " + away.name() + " travels to " + home.name()));
+        }
+
+        return Optional.empty();
     }
 }
