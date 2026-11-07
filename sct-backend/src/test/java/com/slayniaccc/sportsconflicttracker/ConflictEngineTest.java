@@ -53,7 +53,7 @@ class ConflictEngineTest {
     @Test
     void reasoningMentionsRivalryWhenApplicable() {
         Team manCity = new Team(1L, "Manchester City", League.EPL, "65");
-        Team liverpool = new Team(2L, "Liverpool", League.EPL, "64");
+        Team liverpool = new Team(2L,  "Liverpool", League.EPL, "64");
 
         Fixture rivalryFixture = new Fixture(
             1L,manCity, liverpool, Instant.now(), true, false
@@ -61,8 +61,53 @@ class ConflictEngineTest {
 
         ConflictScore result = engine.evaluate(rivalryFixture);
 
-        assertThat(result.reasoning()).contains("RivalryRule");
+        assertThat(result.reasoning()).contains("Rivalry").contains("Manchester City");
     }
+
+    @Test
+void favoriteTeamAtHomeIsDescribed() {
+    Team lakers = new Team(10L, "Los Angeles Lakers", League.NBA, "14");
+    Team jazz = new Team(11L, "Utah Jazz", League.NBA, "29");
+    Fixture f = new Fixture(1L, lakers, jazz, Instant.now(), false, false);
+
+    ConflictScore result = engine.evaluate(f, "14");
+
+    assertThat(result.score()).isEqualTo(20);
+    assertThat(result.reasoning())
+        .contains("Your team Los Angeles Lakers is at home to Utah Jazz (+15)")
+        .contains("Home court for Los Angeles Lakers (+5)");
+}
+
+@Test
+void favoriteTeamAwayIsDescribed() {
+    Team lakers = new Team(10L, "Los Angeles Lakers", League.NBA, "14");
+    Team jazz = new Team(11L, "Utah Jazz", League.NBA, "29");
+    Fixture f = new Fixture(1L, jazz, lakers, Instant.now(), false, false);
+
+    ConflictScore result = engine.evaluate(f, "14");
+
+    assertThat(result.reasoning())
+        .contains("Your team Los Angeles Lakers travels to Utah Jazz (+15)");
+}
+
+@Test
+void ordinaryFixtureOnlyMentionsHomeAdvantage() {
+    Team manCity = new Team(1L, "Manchester City", League.EPL, "65");
+    Team someTeam = new Team(3L, "Some Team", League.EPL, "99");
+    Fixture f = new Fixture(1L, manCity, someTeam, Instant.now(), false, false);
+
+    assertThat(engine.evaluate(f).reasoning())
+        .isEqualTo("Home ground for Manchester City (+5)");
+}
+
+@Test
+void biggestFactorComesFirst() {
+    Team manCity = new Team(1L, "Manchester City", League.EPL, "65");
+    Team liverpool = new Team(2L, "Liverpool", League.EPL, "64");
+    Fixture f = new Fixture(1L, manCity, liverpool, Instant.now(), true, true);
+
+    assertThat(engine.evaluate(f).reasoning()).startsWith("Playoff implications (+25)");
+}
 }
 
 //produce expected score
