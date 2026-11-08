@@ -1,1 +1,30 @@
 @import "tailwindcss";
+
+@theme {
+      --color-bg: #0B0C0A;
+  --color-surface: #0F110D;
+  --color-raised: #171A14;
+  --color-line: #23261F;
+  --color-line-soft: #1E211B;
+  --color-ink: #F2F2EC;
+  --color-ink-2: #D6D8CF;
+  --color-muted: #9A9C93;
+  --color-accent: #D7F94A;
+  --color-clash: #FF8A4C;
+  --color-nba: #FF8A4C;
+  --color-nfl: #7CB8FF;
+  --color-mlb: #FF6B7A;
+  --color-epl: #B79CFF;
+
+  --font-display: "Anton", Impact, sans-serif;
+  --font-sans: "Inter Variable", Inter, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+body {
+     @apply bg-bg text-ink font-sans antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
