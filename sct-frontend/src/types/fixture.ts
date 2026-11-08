@@ -14,7 +14,6 @@ export interface Fixture{
      homeTeam: Team;
   awayTeam: Team;
   kickoff: string;
-  isRivalry: boolean;
   isPlayoffImplication: boolean;
 }
 

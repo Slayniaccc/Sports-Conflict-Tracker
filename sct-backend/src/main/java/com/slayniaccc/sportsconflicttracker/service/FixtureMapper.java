@@ -16,7 +16,6 @@ public class FixtureMapper {
             toDomain(entity.getHomeTeam()),
             toDomain(entity.getAwayTeam()),
             entity.getKickoff(),
-            entity.isRivalry(),
             entity.isPlayoffImplication()
         );
     }

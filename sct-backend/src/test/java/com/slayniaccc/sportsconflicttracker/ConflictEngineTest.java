@@ -33,7 +33,7 @@ class ConflictEngineTest {
 void intensityScalesRivalryPoints() {
     Team lakers = new Team(10L, "Los Angeles Lakers", League.NBA, "14");
     Team clippers = new Team(12L, "LA Clippers", League.NBA, "13");
-    Fixture f = new Fixture(1L, lakers, clippers, Instant.now(), false, false);
+    Fixture f = new Fixture(1L, lakers, clippers, Instant.now(), false);
 
     ConflictScore result = engine.evaluate(f);
 
@@ -43,19 +43,10 @@ void intensityScalesRivalryPoints() {
 }
 
 @Test
-void tableDecidesRivalryNotTheStoredFlag() {
-    Team manCity = new Team(1L, "Manchester City", League.EPL, "65");
-    Team someTeam = new Team(3L, "Some Team", League.EPL, "99");
-    Fixture f = new Fixture(1L, manCity, someTeam, Instant.now(), true, false);
-
-    assertThat(engine.evaluate(f).score()).isEqualTo(5);
-}
-
-@Test
 void rivalryWithoutNoteUsesGenericLabel() {
     Team manCity = new Team(1L, "Manchester City", League.EPL, "65");
     Team liverpool = new Team(2L, "Liverpool", League.EPL, "64");
-    Fixture f = new Fixture(1L, liverpool, manCity, Instant.now(), false, false);
+    Fixture f = new Fixture(1L, liverpool, manCity, Instant.now(), false);
 
     assertThat(engine.evaluate(f).reasoning())
         .contains("Rivalry: Liverpool vs Manchester City (+20)");
@@ -67,7 +58,7 @@ void rivalryWithoutNoteUsesGenericLabel() {
         Team liverpool = new Team(2L, "Liverpool", League.EPL, "64");
 
         Fixture rivalryFixture = new Fixture(
-            1L,manCity, liverpool, Instant.now(), true, false
+            1L,manCity, liverpool, Instant.now(), false
         );
 
         ConflictScore result = engine.evaluate(rivalryFixture);
@@ -81,7 +72,7 @@ void rivalryWithoutNoteUsesGenericLabel() {
         Team someTeam = new Team(3L, "Some Team", League.EPL, "99");
 
         Fixture ordinaryFixture = new Fixture(
-            1L,manCity, someTeam, Instant.now(), false, false
+            1L,manCity, someTeam, Instant.now(), false
         );
 
         ConflictScore result = engine.evaluate(ordinaryFixture);
@@ -95,7 +86,7 @@ void rivalryWithoutNoteUsesGenericLabel() {
         Team liverpool = new Team(2L,  "Liverpool", League.EPL, "64");
 
         Fixture rivalryFixture = new Fixture(
-            1L,manCity, liverpool, Instant.now(), true, false
+            1L,manCity, liverpool, Instant.now(), false
         );
 
         ConflictScore result = engine.evaluate(rivalryFixture);
@@ -107,7 +98,7 @@ void rivalryWithoutNoteUsesGenericLabel() {
 void favoriteTeamAtHomeIsDescribed() {
     Team lakers = new Team(10L, "Los Angeles Lakers", League.NBA, "14");
     Team jazz = new Team(11L, "Utah Jazz", League.NBA, "29");
-    Fixture f = new Fixture(1L, lakers, jazz, Instant.now(), false, false);
+    Fixture f = new Fixture(1L, lakers, jazz, Instant.now(), false);
 
     ConflictScore result = engine.evaluate(f, "14");
 
@@ -121,7 +112,7 @@ void favoriteTeamAtHomeIsDescribed() {
 void favoriteTeamAwayIsDescribed() {
     Team lakers = new Team(10L, "Los Angeles Lakers", League.NBA, "14");
     Team jazz = new Team(11L, "Utah Jazz", League.NBA, "29");
-    Fixture f = new Fixture(1L, jazz, lakers, Instant.now(), false, false);
+    Fixture f = new Fixture(1L, jazz, lakers, Instant.now(), false);
 
     ConflictScore result = engine.evaluate(f, "14");
 
@@ -133,7 +124,7 @@ void favoriteTeamAwayIsDescribed() {
 void ordinaryFixtureOnlyMentionsHomeAdvantage() {
     Team manCity = new Team(1L, "Manchester City", League.EPL, "65");
     Team someTeam = new Team(3L, "Some Team", League.EPL, "99");
-    Fixture f = new Fixture(1L, manCity, someTeam, Instant.now(), false, false);
+    Fixture f = new Fixture(1L, manCity, someTeam, Instant.now(), false);
 
     assertThat(engine.evaluate(f).reasoning())
         .isEqualTo("Home ground for Manchester City (+5)");
@@ -143,7 +134,7 @@ void ordinaryFixtureOnlyMentionsHomeAdvantage() {
 void biggestFactorComesFirst() {
     Team manCity = new Team(1L, "Manchester City", League.EPL, "65");
     Team liverpool = new Team(2L, "Liverpool", League.EPL, "64");
-    Fixture f = new Fixture(1L, manCity, liverpool, Instant.now(), true, true);
+    Fixture f = new Fixture(1L, manCity, liverpool, Instant.now(), true);
 
     assertThat(engine.evaluate(f).reasoning()).startsWith("Playoff implications (+25)");
 }

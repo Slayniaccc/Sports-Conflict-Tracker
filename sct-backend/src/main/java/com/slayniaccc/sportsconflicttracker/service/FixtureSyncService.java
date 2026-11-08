@@ -1,6 +1,5 @@
 package com.slayniaccc.sportsconflicttracker.service;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieClient;
-import com.slayniaccc.sportsconflicttracker.engine.Rivalries;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNbaGame;
 import com.slayniaccc.sportsconflicttracker.client.BallDontLieNbaGamesResponse;
 
@@ -67,7 +66,6 @@ if (kickoff == null) {
             entity.setKickoff(kickoff);
             entity.setLeague("NBA");
             entity.setExternalId(String.valueOf(game.id()));
-            entity.setRivalry(Rivalries.isRivalry("NBA", home.getName(), away.getName()));
             fixtureRepository.save(entity);
         }
     }
@@ -102,7 +100,6 @@ if (kickoff == null) {
 }
               entity.setKickoff(kickoff);
             entity.setExternalId(String.valueOf(game.id()));
-                        entity.setRivalry(Rivalries.isRivalry("NFL", home.getName(), away.getName()));
             fixtureRepository.save(entity);
         }
     }
@@ -143,7 +140,6 @@ if (kickoff == null) {
     entity.setKickoff(kickoff);
         entity.setLeague("MLB");
         entity.setExternalId(String.valueOf(game.id()));
-            entity.setRivalry(Rivalries.isRivalry("MLB", home.getName(), away.getName()));
         fixtureRepository.save(entity);
     }
 }
@@ -174,7 +170,6 @@ if (kickoff == null) {
          entity.setKickoff(kickoff);
         entity.setLeague("EPL");
         entity.setExternalId(String.valueOf(match.id()));
-            entity.setRivalry(Rivalries.isRivalry("EPL", home.getName(), away.getName()));
         fixtureRepository.save(entity);
     }
 }

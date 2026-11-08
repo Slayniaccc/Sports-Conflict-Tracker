@@ -25,10 +25,6 @@ private TeamEntity awayTeam;
 @Column(nullable = false)
 private Instant kickoff;
 
-@Column ( name = "is_rivalry", nullable = false)
-@ColumnDefault("false")
-private boolean isRivalry;
-
 @Column (name = "is_playoff_implication", nullable = false)
 @ColumnDefault("false")
 private boolean isPlayoffImplication;
@@ -48,8 +44,6 @@ public TeamEntity getAwayTeam() { return awayTeam; }
 public void setAwayTeam(TeamEntity awayTeam) { this.awayTeam = awayTeam; }
 public Instant getKickoff() { return kickoff; }
 public void setKickoff(Instant kickoff) { this.kickoff = kickoff; }
-public boolean isRivalry() { return isRivalry; }
-public void setRivalry(boolean rivalry) { this.isRivalry = rivalry; }
 public boolean isPlayoffImplication() { return isPlayoffImplication; }
 public void setPlayoffImplication(boolean playoffImplication) { this.isPlayoffImplication = playoffImplication; }
 public String getExternalId() { return externalId; }

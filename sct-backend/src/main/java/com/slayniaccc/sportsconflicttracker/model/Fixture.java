@@ -7,6 +7,5 @@ public record Fixture(
     Team homeTeam,
     Team awayTeam,
     Instant kickoff,
-    boolean isRivalry,
     boolean isPlayoffImplication
 ) {}
