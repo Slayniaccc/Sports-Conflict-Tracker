@@ -7,6 +7,10 @@ import com.slayniaccc.sportsconflicttracker.model.Team;
 import com.slayniaccc.sportsconflicttracker.rules.HomeAdvantageRule;
 import com.slayniaccc.sportsconflicttracker.rules.PlayoffImplicationRule;
 import com.slayniaccc.sportsconflicttracker.rules.RivalryRule;
+
+import com.slayniaccc.sportsconflicttracker.engine.RivalryLookup;
+import com.slayniaccc.sportsconflicttracker.model.Rivalry;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -17,10 +21,45 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ConflictEngineTest {
 
     private final ConflictEngine engine = new ConflictEngine(List.of(
-        new RivalryRule(),
+         new RivalryRule(new RivalryLookup(List.of(
+        new Rivalry("EPL", "Liverpool", "Manchester City", 2, null),
+        new Rivalry("NBA", "LA Clippers", "Los Angeles Lakers", 3, "Battle of LA")
+    ))),
         new PlayoffImplicationRule(),
         new HomeAdvantageRule()
     ));
+
+    @Test
+void intensityScalesRivalryPoints() {
+    Team lakers = new Team(10L, "Los Angeles Lakers", League.NBA, "14");
+    Team clippers = new Team(12L, "LA Clippers", League.NBA, "13");
+    Fixture f = new Fixture(1L, lakers, clippers, Instant.now(), false, false);
+
+    ConflictScore result = engine.evaluate(f);
+
+    assertThat(result.score()).isEqualTo(35); // 30 rivalry (intensity 3) + 5 home
+    assertThat(result.reasoning())
+        .contains("Battle of LA: Los Angeles Lakers vs LA Clippers (+30)");
+}
+
+@Test
+void tableDecidesRivalryNotTheStoredFlag() {
+    Team manCity = new Team(1L, "Manchester City", League.EPL, "65");
+    Team someTeam = new Team(3L, "Some Team", League.EPL, "99");
+    Fixture f = new Fixture(1L, manCity, someTeam, Instant.now(), true, false);
+
+    assertThat(engine.evaluate(f).score()).isEqualTo(5);
+}
+
+@Test
+void rivalryWithoutNoteUsesGenericLabel() {
+    Team manCity = new Team(1L, "Manchester City", League.EPL, "65");
+    Team liverpool = new Team(2L, "Liverpool", League.EPL, "64");
+    Fixture f = new Fixture(1L, liverpool, manCity, Instant.now(), false, false);
+
+    assertThat(engine.evaluate(f).reasoning())
+        .contains("Rivalry: Liverpool vs Manchester City (+20)");
+}
 
     @Test
     void rivalryFixtureScoresHigherThanNonRivalry() {

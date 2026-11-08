@@ -18,9 +18,9 @@ import java.util.List;
 public class ConflictEngineConfig {
 
     @Bean
-    public ConflictEngine conflictEngine() {
+    public ConflictEngine conflictEngine(RivalryLookup rivalryLookup) {
         List<ImportanceRule> rules = List.of(
-            new RivalryRule(),
+            new RivalryRule(rivalryLookup),
             new PlayoffImplicationRule(),
             new HomeAdvantageRule()
         );
@@ -34,6 +34,6 @@ public class ConflictEngineConfig {
         .toList();
         return new RivalryLookup(rivalries);
 
-        
+
     }
 }
