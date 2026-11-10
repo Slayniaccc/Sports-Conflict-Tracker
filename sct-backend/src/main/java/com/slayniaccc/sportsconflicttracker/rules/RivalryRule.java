@@ -22,8 +22,8 @@ public RivalryRule(RivalryLookup lookup){
       
        return lookup.find(league, home, away).map(r -> {
             String label = r.note() != null ? r.note() : "Rivalry";
-            return new Factor(r.intensity() * POINTS_PER_INTENSITY,
-                label + ": " + home + " vs " + away);
+            return new Factor(Factor.Kind.RIVALRY, r.intensity() * POINTS_PER_INTENSITY,
+                label, label + ": " + home + " vs " + away);
         });
     }
 }

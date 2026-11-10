@@ -1,6 +1,7 @@
 package com.slayniaccc.sportsconflicttracker;
 import com.slayniaccc.sportsconflicttracker.engine.ConflictEngine;
 import com.slayniaccc.sportsconflicttracker.model.ConflictScore;
+import com.slayniaccc.sportsconflicttracker.model.Factor;
 import com.slayniaccc.sportsconflicttracker.model.Fixture;
 import com.slayniaccc.sportsconflicttracker.model.League;
 import com.slayniaccc.sportsconflicttracker.model.Team;
@@ -138,6 +139,21 @@ void biggestFactorComesFirst() {
 
     assertThat(engine.evaluate(f).reasoning()).startsWith("Playoff implications (+25)");
 }
+
+@Test
+void factorsAreStructuredAndSortedBiggestFirst() {
+    Team lakers = new Team(10L, "Los Angeles Lakers", League.NBA, "14");
+    Team clippers = new Team(12L, "LA Clippers", League.NBA, "13");
+    Fixture f = new Fixture(1L, clippers, lakers, Instant.now(), false);
+
+    ConflictScore result = engine.evaluate(f, "14");
+
+    assertThat(result.factors()).extracting(Factor::kind).containsExactly(
+        Factor.Kind.RIVALRY, Factor.Kind.FAVORITE_TEAM, Factor.Kind.HOME);
+    assertThat(result.factors().get(0).label()).isEqualTo("Battle of LA");
+    assertThat(result.factors().get(1).label()).isEqualTo("Your team travels");
+}
+
 }
 
 //produce expected score

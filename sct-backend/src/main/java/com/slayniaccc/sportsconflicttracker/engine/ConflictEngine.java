@@ -7,6 +7,7 @@ import com.slayniaccc.sportsconflicttracker.model.Fixture;
 import com.slayniaccc.sportsconflicttracker.model.Team;
 import com.slayniaccc.sportsconflicttracker.rules.ImportanceRule;
 
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -31,19 +32,21 @@ public class ConflictEngine {
         favoriteTeamFactor(fixture, favoriteTeamExternalId).ifPresent(factors::add);
 
 
-        int total = factors.stream()
-            .mapToInt(Factor::points).sum();
+        int total = factors.stream().mapToInt(Factor::points).sum();
+
+        List<Factor> sorted = factors.stream()
+        .sorted(Comparator.comparingInt(Factor::points).reversed())
+        .toList();
          
 
-        String reasoning = factors.stream()
-        .sorted(Comparator.comparingInt(Factor::points).reversed())
+        String reasoning = sorted.stream()
         .map(f -> f.reason() + " (+" + f.points() + ")")
         .collect(Collectors.joining(" · "));
 
      
         
 
-        return new ConflictScore(fixture, total, reasoning.isEmpty() ? "No significant factors." : reasoning);
+        return new ConflictScore(fixture, total, reasoning.isEmpty() ? "No significant factors." : reasoning, sorted);
     }
 
     private Optional<Factor> favoriteTeamFactor(Fixture fixture, String favoriteId) {
@@ -52,11 +55,11 @@ public class ConflictEngine {
         Team away = fixture.awayTeam();
 
         if(favoriteId.equals(home.externalId())){
-            return Optional.of(new Factor(15, "Your team " + home.name() + " is at home to " + away.name()));
+            return Optional.of(new Factor(Factor.Kind.FAVORITE_TEAM, 15, "Your team is at home ", "Your team " + home.name() + " is at home to " + away.name()));
         }
          if (favoriteId.equals(away.externalId())) {
-            return Optional.of(new Factor(15,
-                "Your team " + away.name() + " travels to " + home.name()));
+            return Optional.of(new Factor(Factor.Kind.FAVORITE_TEAM, 15,
+                "Your team travels", "Your team " + away.name() + " travels to " + home.name()));
         }
 
         return Optional.empty();

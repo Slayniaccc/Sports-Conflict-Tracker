@@ -2,6 +2,8 @@ export type League = "NBA" | "NFL" | "MLB" | "EPL"
 
 export type FixtureStatus = "ft" | "live" | "upcoming"
 
+export type FactorKind = "RIVALRY" | "PLAYOFF" | "HOME" | "FAVORITE_TEAM"
+
 export interface Team{
     id: number;
     name: string;
@@ -17,10 +19,18 @@ export interface Fixture{
   isPlayoffImplication: boolean;
 }
 
+export interface Factor {
+    kind: FactorKind;
+    points: number;
+    label: string;
+    reason: string;
+}
 export interface ScoredFixture{
     fixture: Fixture;
     score: number;
     reasoning: string;
+    factors: Factor[];
+
 }
 
 export interface TeamDetail{
