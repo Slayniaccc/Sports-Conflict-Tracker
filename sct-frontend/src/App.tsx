@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import type { League, ScoredFixture } from "./types/fixture";
 import FixtureCard from "./components/FixtureCard";
-import Sidebar from "./components/Sidebar";
+import TopBar from "./components/TopBar";
+import DayStrip from "./components/DayStrip";
+import { buildWeek, dayHeading, dayKey } from "./lib/days";
 import  {toCardProps} from "./lib/toCardProps";
 import { getScoredFixtures } from "./api/fixtures";
 
@@ -31,12 +33,16 @@ function groupByDay(items: ScoredFixture[]){
 }
 export default function App(){
   const[selectedLeague, setSelectedLeague] = useState<League>("NBA");
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const[fixtures, setFixtures] = useState<ScoredFixture[]>([]);
   const[loading, setLoading] = useState(true);
   const[error, setError] = useState< string | null>(null);
+
+
   function handleSelectLeague(league: League){
   if(league === selectedLeague) return;
   setSelectedLeague(league);
+  setSelectedDay(null);
   setLoading(true);
   setError(null);
 }
@@ -65,20 +71,33 @@ const upcoming = fixtures.filter(
 .sort(
   (a,b) => new Date(a.fixture.kickoff).getTime() - new Date(b.fixture.kickoff).getTime()
 );
-const visible = upcoming.slice(0, 20);
+const week = buildWeek(upcoming, now);
+const visible = selectedDay
+    ? upcoming.filter((item) => dayKey(new Date(item.fixture.kickoff))=== selectedDay)
+    : upcoming.slice(0,20);
   return(
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex">
-   <Sidebar selectedLeague={selectedLeague} onSelectLeague={handleSelectLeague} />
+    <div className="min-h-screen">
+   <TopBar selectedLeague={selectedLeague} onSelectLeague={handleSelectLeague}>
+  <DayStrip days={week} selected={selectedDay} onSelect={setSelectedDay} />
+</TopBar>
 
         
   
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="mx-auto max-w-[1360px] px-8 pb-16 pt-7">
      
-       <div className="flex items-baseline justify-between mb-6">
-<h1 className="text-3xl font-semibold tracking-tight">Upcoming Fixtures</h1>
-        <p className="text-sm text-zinc-500">
-          Showing {visible.length} of {upcoming.length}</p>
+       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+
+<h1 className="font-display text-[44px] leading-none tracking-[0.01em]">{selectedDay ? dayHeading(selectedDay, now) : "UP NEXT"}</h1>
+       <p className="mt-1.5 text-sm text-muted">Ranked by how much each game matters to you.</p>
+          </div>
+          <p className="text-sm text-muted">
+        {selectedDay
+  ? `${visible.length} ${visible.length === 1 ? "game" : "games"}`
+  : `Showing ${visible.length} of ${upcoming.length}`}
+          </p>
         </div>
+
        
        {loading && (
         <p className="text-zinc-500">Loading fixtures...</p>
@@ -92,7 +111,7 @@ const visible = upcoming.slice(0, 20);
 )}
 {!loading && !error && groupByDay(visible).map((group) => (
   <section key={group.day} className="mb-8">
-    <h2 className="text-sm font-medium text-zinc-400 mb-3">{group.day}</h2>
+    {!selectedDay && <h2 className="text-sm font-medium text-zinc-400 mb-3">{group.day}</h2>}
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {group.items.map((item) => (
         <FixtureCard
