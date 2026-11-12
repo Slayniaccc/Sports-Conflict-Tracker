@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import type { League, ScoredFixture } from "./types/fixture";
-import FixtureCard from "./components/FixtureCard";
+import DayGroup from "./components/DayGroup";
 import TopBar from "./components/TopBar";
 import DayStrip from "./components/DayStrip";
 import { buildWeek, dayHeading, dayKey } from "./lib/days";
-import  {toCardProps} from "./lib/toCardProps";
+import { findClashes } from "./lib/clashes";
 import { getScoredFixtures } from "./api/fixtures";
 
 //currently a stand in for a real status field,keeps games that recently kicked off on the page
@@ -75,6 +75,7 @@ const week = buildWeek(upcoming, now);
 const visible = selectedDay
     ? upcoming.filter((item) => dayKey(new Date(item.fixture.kickoff))=== selectedDay)
     : upcoming.slice(0,20);
+    const clashes = findClashes(upcoming);
   return(
     <div className="min-h-screen">
    <TopBar selectedLeague={selectedLeague} onSelectLeague={handleSelectLeague}>
@@ -110,17 +111,14 @@ const visible = selectedDay
   <p className="text-zinc-500">No upcoming {selectedLeague} fixtures.</p>
 )}
 {!loading && !error && groupByDay(visible).map((group) => (
-  <section key={group.day} className="mb-8">
-    {!selectedDay && <h2 className="text-sm font-medium text-zinc-400 mb-3">{group.day}</h2>}
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {group.items.map((item) => (
-        <FixtureCard
-        key={item.fixture.id}
-        {...toCardProps(item)}
-        />
-      ))}
-      </div>
-      </section>
+ <DayGroup
+ key={group.day}
+    label={selectedDay ? null : group.day}
+    items={group.items}
+    clashes={clashes}
+ 
+ 
+ />
 ))}
 
       </main>
