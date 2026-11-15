@@ -1,0 +1,12 @@
+# Loaded only when the "test" profile is active (@ActiveProfiles("test")).
+# Merges over the main application.yml and application.properties; it does not replace them.
+# These are placeholders so the Spring context can start. None is a real credential.
+jwt:
+  secret: test-only-jwt-secret-not-used-anywhere-real-0123456789abcdef
+
+balldontlie:
+  api-key: test-dummy-balldontlie-key
+
+football:
+  data:
+    api-key: test-dummy-football-data-key
