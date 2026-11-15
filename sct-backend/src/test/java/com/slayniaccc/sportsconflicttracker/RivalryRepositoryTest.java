@@ -3,6 +3,7 @@ package com.slayniaccc.sportsconflicttracker;
 import com.slayniaccc.sportsconflicttracker.entity.RivalryEntity;
 import com.slayniaccc.sportsconflicttracker.repository.RivalryRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@EnabledIfEnvironmentVariable(named = "RUN_DB_TESTS", matches = "true")
 
 class RivalryRepositoryTest{
       @Autowired

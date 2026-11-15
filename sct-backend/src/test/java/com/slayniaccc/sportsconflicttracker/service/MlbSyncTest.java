@@ -3,12 +3,14 @@ package com.slayniaccc.sportsconflicttracker.service;
 import com.slayniaccc.sportsconflicttracker.repository.FixtureRepository;
 import com.slayniaccc.sportsconflicttracker.repository.TeamRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@EnabledIfEnvironmentVariable(named = "RUN_LIVE_SYNC_TESTS", matches = "true")
 class MlbSyncTest {
 
     @Autowired TeamSyncService teamSyncService;
