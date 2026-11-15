@@ -3,18 +3,27 @@ package com.slayniaccc.sportsconflicttracker;
 import com.slayniaccc.sportsconflicttracker.entity.RivalryEntity;
 import com.slayniaccc.sportsconflicttracker.repository.RivalryRepository;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.context.ActiveProfiles;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@EnabledIfEnvironmentVariable(named = "RUN_DB_TESTS", matches = "true")
-
+@ActiveProfiles("test")
+@Testcontainers(disabledWithoutDocker = true)
 class RivalryRepositoryTest{
+
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16");
+
       @Autowired
     private RivalryRepository repository;
 
