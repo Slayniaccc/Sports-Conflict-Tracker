@@ -21,3 +21,4 @@ const res = await fetch(`${API_URL}/api/users/me`, { headers: authHeaders() });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
+
