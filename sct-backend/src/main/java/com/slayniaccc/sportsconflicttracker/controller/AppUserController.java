@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import java.time.Instant;
-
+import java.util.Map;
 
 @RestController
 public class AppUserController{
@@ -30,15 +30,21 @@ public AppUserController(AppUserRepository appUserRepository, PasswordEncoder pa
 
 
 @PostMapping("/api/users/register")
-public UserResponse register(@RequestBody RegisterUserRequest request){
+public ResponseEntity<?> register(@RequestBody RegisterUserRequest request){
+    if(appUserRepository.findByEmail(request.email()).isPresent()){
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(Map.of("message", "Email already registered"));
+    }
 AppUserEntity user = new AppUserEntity(); //
 user.setEmail(request.email());
 user.setPasswordHash(passwordEncoder.encode(request.password()));
 user.setCreatedAt(Instant.now());
 user.setUpdatedAt(Instant.now());
 appUserRepository.save(user);
-return new UserResponse(user.getId(), user.getEmail(), user.isVerified(), user.getCreatedAt(), user.getUpdatedAt());
+return ResponseEntity.ok(new UserResponse(user.getId(), user.getEmail(), user.isVerified(), user.getCreatedAt(), user.getUpdatedAt()));
 }
+
+
 @PostMapping("/api/users/login")
 public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest logged){
     Optional<AppUserEntity> foundUser = appUserRepository.findByEmail(logged.email());

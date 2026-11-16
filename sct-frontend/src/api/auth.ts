@@ -8,8 +8,12 @@ const res = await fetch(`${API_URL}/api/users/register` , {
     headers: {"Content-Type": "application/json"},
 body: JSON.stringify({email,password}),
 });
-if(!res.ok) throw new Error(`HTTP ${res.status}`)
-    return res.json();
+if(!res.ok) {
+    const body = await res.json().catch(() => null);
+  throw new Error(body?.message ?? `HTTP ${res.status}`);
+
+}
+return res.json();
 }
 
 export interface LoginResponse{
