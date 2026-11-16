@@ -1,6 +1,6 @@
 import {useParams, Link} from "react-router";
 import {useState, useEffect} from "react";
-import {API_URL, authHeaders} from "../api/config"
+import { getScoredFixture } from "../api/fixtures";
 import type {ScoredFixture} from "../types/fixture"
 
  
@@ -11,23 +11,18 @@ export default function FixtureDetail() {
           const [fixture,setFixture] = useState<ScoredFixture | null>(null);
 
           useEffect(() => {
-            
+             if (!id) return;
             let cancelled = false;
             setLoading(true);
             setError(null);
      
-            fetch(`${API_URL}/api/fixtures/scored/${id}`, {headers: authHeaders()})
-            .then((res) =>{
-                  
-                if(!res.ok) throw new Error(`HTTP ${res.status}`);
-                return res.json();
-            })
-            .then((data) => {
-                
-                if(cancelled) return;
-                setFixture(data)
-                setLoading(false)
-            })
+            getScoredFixture(id)
+              .then((data) => {
+      if (cancelled) return;
+      setFixture(data);
+      setLoading(false);
+    })
+          
             .catch((err) => {
                     
 
