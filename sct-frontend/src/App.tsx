@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import type { League, ScoredFixture } from "./types/fixture";
 import DayGroup from "./components/DayGroup";
 import HeroPick from "./components/HeroPick";
+import YourTeamCard from "./components/YourTeamCard";
+import ComingNextCard from "./components/ComingNextCard";
+import SignInCard from "./components/SignInCard";
 import TopBar from "./components/TopBar";
 import DayStrip from "./components/DayStrip";
 import { buildWeek, dayHeading, dayKey } from "./lib/days";
@@ -104,40 +107,49 @@ export default function App() {
           </div>
         )}
 
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <div>
+        <div className="flex flex-col gap-7 lg:flex-row lg:items-start">
+          <div className="min-w-0 flex-1">
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+              <div>
 
-            <h1 className="font-display text-[44px] leading-none tracking-[0.01em]">{selectedDay ? dayHeading(selectedDay, now) : "UP NEXT"}</h1>
-            <p className="mt-1.5 text-sm text-muted">Ranked by how much each game matters to you.</p>
+                <h1 className="font-display text-[44px] leading-none tracking-[0.01em]">{selectedDay ? dayHeading(selectedDay, now) : "UP NEXT"}</h1>
+                <p className="mt-1.5 text-sm text-muted">Ranked by how much each game matters to you.</p>
+              </div>
+              <p className="text-sm text-muted">
+                {selectedDay
+                  ? `${visible.length} ${visible.length === 1 ? "game" : "games"}`
+                  : `Showing ${visible.length} of ${upcoming.length}`}
+              </p>
+            </div>
+
+
+            {loading && (
+              <p className="text-zinc-500">Loading fixtures...</p>
+            )}
+
+            {error && (
+              <p className="text-red-500">Error: {error}</p>
+            )}
+            {!loading && !error && visible.length === 0 && (
+              <p className="text-zinc-500">No upcoming {selectedLeague} fixtures.</p>
+            )}
+            {!loading && !error && groupByDay(visible).map((group) => (
+              <DayGroup
+                key={group.day}
+                label={selectedDay ? null : group.day}
+                items={group.items}
+                clashes={clashes}
+
+
+              />
+            ))}
           </div>
-          <p className="text-sm text-muted">
-            {selectedDay
-              ? `${visible.length} ${visible.length === 1 ? "game" : "games"}`
-              : `Showing ${visible.length} of ${upcoming.length}`}
-          </p>
+          <aside aria-label="Your team and what's next" className="flex w-full shrink-0 flex-col gap-[18px] lg:w-[320px]">
+            <YourTeamCard />
+            <ComingNextCard />
+            <SignInCard />
+          </aside>
         </div>
-
-
-        {loading && (
-          <p className="text-zinc-500">Loading fixtures...</p>
-        )}
-
-        {error && (
-          <p className="text-red-500">Error: {error}</p>
-        )}
-        {!loading && !error && visible.length === 0 && (
-          <p className="text-zinc-500">No upcoming {selectedLeague} fixtures.</p>
-        )}
-        {!loading && !error && groupByDay(visible).map((group) => (
-          <DayGroup
-            key={group.day}
-            label={selectedDay ? null : group.day}
-            items={group.items}
-            clashes={clashes}
-
-
-          />
-        ))}
 
       </main>
     </div>
