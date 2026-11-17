@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import TopBar from "../components/TopBar";
 import TeamBlock from "../components/TeamBlock";
 import { useCountUp } from "../hooks/useCountUp";
+import ScoreBreakdown from "../components/ScoreBreakdown";
 
 export default function FixtureDetail() {
     const { id } = useParams();
@@ -125,7 +126,10 @@ export default function FixtureDetail() {
     </section>
 
     {/* Temporary: replaced by the breakdown bars in 8e */}
-    <p className="mt-6 text-sm text-ink-2">{fixture.reasoning}</p>
+    <div className="mt-6">
+<ScoreBreakdown score={fixture.score} factors={fixture.factors} />
+    </div>
+   
   </>
     )
 }
