@@ -4,6 +4,8 @@ import { getScoredFixture } from "../api/fixtures";
 import type { ScoredFixture, League } from "../types/fixture"
 import { ArrowLeft } from "lucide-react";
 import TopBar from "../components/TopBar";
+import TeamBlock from "../components/TeamBlock";
+import { useCountUp } from "../hooks/useCountUp";
 
 export default function FixtureDetail() {
     const { id } = useParams();
@@ -37,6 +39,7 @@ export default function FixtureDetail() {
     }, [id])
     const league = fixture ? (fixture.fixture.homeTeam.league as League) : null;
     const notFound = error === "HTTP 404";
+    const shown = useCountUp(fixture?.score ?? 0);
 
     return (
         < div className = "min-h-screen">
@@ -75,50 +78,55 @@ export default function FixtureDetail() {
 
 {
     !loading && !error && fixture && (
-        <div>
-            <div className="mb-6">
-                <p className="mb-1 text-sm text-muted">
-                    {fixture.fixture.homeTeam.league}
-                </p>
-                <h1 className="text-2xl font-semibold tracking-tight">
-                    <Link
-                        to={`/teams/${fixture.fixture.homeTeam.id}`}
-                        className="transition-colors hover:text-accent"
-                    >
-                        {fixture.fixture.homeTeam.name}
-                    </Link>
-                    <span className="text-muted"> vs </span>
-                    <Link
-                        to={`/teams/${fixture.fixture.awayTeam.id}`}
-                        className="transition-colors hover:text-accent"
-                    >
-                        {fixture.fixture.awayTeam.name}
-                    </Link>
-                </h1>
-            </div>
+    <>
+          <section
+      aria-label="Fixture"
+      className="rounded-[22px] border border-line px-8 pb-8 pt-7"
+      style={{
+        backgroundImage:
+          "repeating-linear-gradient(90deg, rgba(255,255,255,0.018) 0 72px, transparent 72px 144px), linear-gradient(180deg, #141712, #0E100C)",
+      }}
+    >
+      <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-ink-2">
+        {league} ·{" "}
+        {new Date(fixture.fixture.kickoff).toLocaleString([], {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })}
+      </p>
 
-            <div className="mb-6 rounded-lg border border-line bg-surface p-6">
-                <p className="mb-2 text-xs uppercase tracking-wider text-muted">Kickoff</p>
-                <p className="text-lg">
-                    {new Date(fixture.fixture.kickoff).toLocaleString([], {
-                        weekday: "long",
-                        day: "numeric",
-                        month: "long",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                    })}
-                </p>
-            </div>
-
-            <div className="rounded-lg border border-line bg-surface p-6">
-                <div className="mb-4 flex items-baseline justify-between">
-                    <p className="text-xs  uppercase tracking-wider">Conflict score</p>
-                    <span className="text-3xl font-semibold tabular-nums">{fixture.score}</span>
-                </div>
-                <p className="text-sm text-zinc-400">{fixture.reasoning}</p>
-            </div>
+      <div className="mt-6 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-7">
+        <TeamBlock
+          name={fixture.fixture.homeTeam.name}
+          league={fixture.fixture.homeTeam.league}
+          side="home"
+          to={`/teams/${fixture.fixture.homeTeam.id}`}
+        />
+        <div className="px-2 text-center">
+          <span className="sr-only">Conflict score {fixture.score}</span>
+          <div aria-hidden="true" className="font-display text-[clamp(72px,9vw,128px)] leading-[0.9] text-accent tabular-nums">
+            {shown}
+          </div>
+          <div aria-hidden="true" className="mt-2 text-[11px] font-semibold tracking-[0.18em] text-muted">
+            CONFLICT SCORE
+          </div>
         </div>
+        <TeamBlock
+          name={fixture.fixture.awayTeam.name}
+          league={fixture.fixture.awayTeam.league}
+          side="away"
+          to={`/teams/${fixture.fixture.awayTeam.id}`}
+        />
+      </div>
+    </section>
+
+    {/* Temporary: replaced by the breakdown bars in 8e */}
+    <p className="mt-6 text-sm text-ink-2">{fixture.reasoning}</p>
+  </>
     )
 }
         </main >

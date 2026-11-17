@@ -1,9 +1,10 @@
 import { Link } from "react-router";
 import {ArrowRight, Clock, Star} from "lucide-react";
 import type {ScoredFixture} from "../types/fixture";
-import {teamAbbr, teamShort} from "../lib/teams";
 import {useCountUp} from "../hooks/useCountUp";
 import type {MouseEvent} from "react";
+import TeamBlock from "./TeamBlock";
+
 
 interface HeroPickProps{
     item: ScoredFixture;
@@ -21,28 +22,6 @@ function shortTime(iso: string){
     return new Date(iso).toLocaleTimeString([], {hour: "2-digit", minute:"2-digit", hour12: false})
 }
 
-function TeamBlock({name, league, side}: {name: string; league: string; side: "home" | "away"}) {
-    const isHome = side === "home";
-
-    return(
-         <div className={`flex min-w-0 items-center gap-4 ${isHome ? "flex-row-reverse text-right" : ""}`}>
-      <span
-        aria-hidden="true"
-        className="grid size-[72px] shrink-0 place-items-center rounded-full border border-line bg-raised font-display text-2xl"
-      >
-           {teamAbbr(name)}
-      </span>
-      <div className="min-w-0">
-        <div className="truncate font-display text-[clamp(40px, 6vw, 84px)] uppercase leading-[0.95]">
-                 {teamShort(name, league)}
-        </div>
-         <div className="mt-1.5 truncate text-sm font-medium text-muted">
-          {name} · {isHome ? "Home" : "Away"}
-        </div>
-      </div>
-      </div>
-    )
-}
 
 export default function HeroPick({item, clashesWith} : HeroPickProps){
   const {fixture, score, factors} = item;
