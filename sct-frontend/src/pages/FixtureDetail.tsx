@@ -1,18 +1,24 @@
 import { useParams, Link, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
-import { getScoredFixture } from "../api/fixtures";
+import { getScoredFixture,getScoredFixtures  } from "../api/fixtures";
 import type { ScoredFixture, League } from "../types/fixture"
 import { ArrowLeft } from "lucide-react";
 import TopBar from "../components/TopBar";
 import TeamBlock from "../components/TeamBlock";
 import { useCountUp } from "../hooks/useCountUp";
 import ScoreBreakdown from "../components/ScoreBreakdown";
+import ClashCard, { type ClashState } from "../components/ClashCard";
+import { findClashes } from "../lib/clashes";
 
 export default function FixtureDetail() {
     const { id } = useParams();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [fixture, setFixture] = useState<ScoredFixture | null>(null);
+    const [leagueFixtures, setLeagueFixtures] = useState<{
+        league: League;
+        data: ScoredFixture[] | null;
+  } | null>(null);
     const navigate = useNavigate();
     useEffect(() => {
         if (!id) return;
@@ -39,6 +45,27 @@ export default function FixtureDetail() {
         }
     }, [id])
     const league = fixture ? (fixture.fixture.homeTeam.league as League) : null;
+    useEffect(() => {
+        if(!league) return;
+        let cancelled = false;
+        getScoredFixtures(league)
+        .then((data) => {
+            if(!cancelled) setLeagueFixtures({league,data});
+        })
+        .catch(() => {
+            if(!cancelled)setLeagueFixtures({ league, data: null });
+        })
+        return () => {
+             cancelled = true;
+        }
+        
+    }, [league])
+    let clashState: ClashState = { status: "loading" };
+if (fixture && leagueFixtures?.league === league) {
+  clashState = leagueFixtures.data
+    ? { status: "ready", rivals: findClashes(leagueFixtures.data).get(fixture.fixture.id) ?? [] }
+    : { status: "error" };
+}
     const notFound = error === "HTTP 404";
     const shown = useCountUp(fixture?.score ?? 0);
 
@@ -126,10 +153,14 @@ export default function FixtureDetail() {
     </section>
 
     {/* Temporary: replaced by the breakdown bars in 8e */}
-    <div className="mt-6">
-<ScoreBreakdown score={fixture.score} factors={fixture.factors} />
-    </div>
-   
+    <div className="mt-6 flex flex-wrap items-start gap-6">
+  <div className="min-w-0 flex-[3_1_460px]">
+    <ScoreBreakdown score={fixture.score} factors={fixture.factors} />
+  </div>
+  <div className="min-w-0 flex-[2_1_320px]">
+    <ClashCard fixture={fixture} state={clashState} />
+  </div>
+</div>
   </>
     )
 }
