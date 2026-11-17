@@ -10,6 +10,8 @@ import DayStrip from "./components/DayStrip";
 import { buildWeek, dayHeading, dayKey } from "./lib/days";
 import { findClashes } from "./lib/clashes";
 import { getScoredFixtures } from "./api/fixtures";
+import {useSearchParams} from "react-router";
+import { LEAGUES } from "./lib/leagues";
 
 //currently a stand in for a real status field,keeps games that recently kicked off on the page
 const IN_PROGRESS_GRACE_MS = 3 * 60 * 60 * 1000;
@@ -35,38 +37,45 @@ function groupByDay(items: ScoredFixture[]) {
   }
   return groups;
 }
-export default function App() {
-  const [selectedLeague, setSelectedLeague] = useState<League>("NBA");
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
-  const [fixtures, setFixtures] = useState<ScoredFixture[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
+function parseLeague(value: string|null):League{
+  const upper = value?.toUpperCase();
+ return LEAGUES.find((l) => l === upper) ?? "NBA";
+}
+
+export default function App() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedLeague = parseLeague(searchParams.get("league"));
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+const [result, setResult] = useState<{
+ league: League;
+  data: ScoredFixture[];
+  error: string | null;
+} | null>(null);
 
   function handleSelectLeague(league: League) {
     if (league === selectedLeague) return;
-    setSelectedLeague(league);
-    setSelectedDay(null);
-    setLoading(true);
-    setError(null);
+    setSearchParams({ league });
+  setSelectedDay(null);
   }
   useEffect(() => {
     let cancelled = false;
+      const league = selectedLeague;
     getScoredFixtures(selectedLeague)
       .then((data) => {
-        if (cancelled) return;
-        setFixtures(data);
-        setLoading(false)
+         if (!cancelled) setResult({ league, data, error: null });
       })
       .catch((err) => {
-        if (cancelled) return
-        setError(err.message);
-        setLoading(false)
+          if (!cancelled) setResult({league, data: [], error: err.message });
       })
     return () => {
       cancelled = true;
     };
   }, [selectedLeague])
+
+  const loading = result?.league !== selectedLeague;
+const fixtures = loading ? [] : result.data;
+const error = loading ? null : result.error;
   const now = new Date();
   const upcoming = fixtures.filter(
     (item) =>
