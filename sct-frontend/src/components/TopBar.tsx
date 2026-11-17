@@ -6,7 +6,7 @@ import LeagueTabs from "./LeagueTabs";
 
 
 interface TopBarProps {
-   selectedLeague: League;
+   selectedLeague: League | null;
   onSelectLeague: (league: League) => void;
   children?: ReactNode;
 }

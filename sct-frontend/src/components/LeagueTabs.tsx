@@ -3,7 +3,7 @@ import type {League} from "../types/fixture";
 import {LEAGUES, LEAGUE_SWATCH} from "../lib/leagues";
 
 interface LeagueTabsProps{
-    selected: League;
+    selected: League | null;
     onSelect: (league: League) => void;
 }
 
