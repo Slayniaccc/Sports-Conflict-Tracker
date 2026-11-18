@@ -28,7 +28,7 @@ export default function LeagueTabs({selected, onSelect}: LeagueTabsProps){
                             layoutId="league-pill"
                             aria-hidden="true"
                             className="absolute inset-0 rounded-full bg-accent"
-                            transition={{type: "spring", stiffness: 500, damping: 40}}
+                            transition={{type: "spring", stiffness: 700, damping: 45, mass:0.6}}
                             />
                         )} 
                         <span aria-hidden="true" className={`relative size-2 rounded-[2px] ${LEAGUE_SWATCH[league]}`}/>

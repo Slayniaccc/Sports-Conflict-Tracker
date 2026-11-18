@@ -14,7 +14,7 @@ interface HeroPickProps{
 function kickoffLine(iso: string, league: string){
     const d = new Date(iso);
     const day = d.toLocaleDateString([], {weekday: "short", day: "numeric", month: "short"});
-    const time = d.toLocaleDateString([], {hour: "2-digit", minute: "2-digit", hour12: false});
+  const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
     return `${league} · ${day} · ${time}`.toUpperCase();
 }
 

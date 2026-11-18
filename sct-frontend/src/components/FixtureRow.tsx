@@ -35,7 +35,7 @@ function TeamLine({name, strong = false} :{name: string; strong?: boolean}){
 export default function FixtureRow({item, clashesWith} : FixtureRowProps){
     const {fixture, score,factors} = item;
     const yours = factors.some((f) => f.kind === "FAVORITE_TEAM");
-    const why = factors.length > 0 ? factors.map((f) => f.label).join(" . ") : "No standout factors";
+    const why = factors.length > 0 ? factors.map((f) => f.label).join(" · ") : "No standout factors";
     const clashText = clashesWith
     .map((c) => `${c.fixture.homeTeam.name} vs ${c.fixture.awayTeam.name}`)
     .join(", ");
