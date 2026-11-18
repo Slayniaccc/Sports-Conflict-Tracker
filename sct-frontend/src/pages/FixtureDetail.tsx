@@ -9,6 +9,7 @@ import { useCountUp } from "../hooks/useCountUp";
 import ScoreBreakdown from "../components/ScoreBreakdown";
 import ClashCard, { type ClashState } from "../components/ClashCard";
 import { findClashes } from "../lib/clashes";
+import PlannedModules from "../components/PlannedModules";
 
 export default function FixtureDetail() {
     const { id } = useParams();
@@ -152,7 +153,6 @@ if (fixture && leagueFixtures?.league === league) {
       </div>
     </section>
 
-    {/* Temporary: replaced by the breakdown bars in 8e */}
     <div className="mt-6 flex flex-wrap items-start gap-6">
   <div className="min-w-0 flex-[3_1_460px]">
     <ScoreBreakdown score={fixture.score} factors={fixture.factors} />
@@ -161,6 +161,7 @@ if (fixture && leagueFixtures?.league === league) {
     <ClashCard fixture={fixture} state={clashState} />
   </div>
 </div>
+<PlannedModules />
   </>
     )
 }
