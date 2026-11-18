@@ -7,7 +7,7 @@ import ComingNextCard from "./components/ComingNextCard";
 import SignInCard from "./components/SignInCard";
 import TopBar from "./components/TopBar";
 import DayStrip from "./components/DayStrip";
-import { buildWeek, dayHeading, dayKey } from "./lib/days";
+import { buildWeek, dayHeading, dayKey, groupByDay } from "./lib/days";
 import { findClashes } from "./lib/clashes";
 import { getScoredFixtures } from "./api/fixtures";
 import {useSearchParams} from "react-router";
@@ -15,28 +15,7 @@ import { LEAGUES } from "./lib/leagues";
 
 //currently a stand in for a real status field,keeps games that recently kicked off on the page
 const IN_PROGRESS_GRACE_MS = 3 * 60 * 60 * 1000;
-function dayLabel(kickoff: string) {
-  return new Date(kickoff).toLocaleDateString([], {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-}
 
-//relies on the list already being sorted by kickoff
-function groupByDay(items: ScoredFixture[]) {
-  const groups: { day: string; items: ScoredFixture[] }[] = [];
-  for (const item of items) {
-    const day = dayLabel(item.fixture.kickoff);
-    const last = groups[groups.length - 1];
-    if (last && last.day === day) {
-      last.items.push(item);
-    } else {
-      groups.push({ day, items: [item] });
-    }
-  }
-  return groups;
-}
 
 function parseLeague(value: string|null):League{
   const upper = value?.toUpperCase();

@@ -67,3 +67,25 @@ export function dayHeading(key: string, now = new Date()): string {
 
   return `${name}, ${ordinal(d)} ${month}`;
 }
+function dayLabel(kickoff: string) {
+  return new Date(kickoff).toLocaleDateString([], {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+}
+
+/** Groups consecutive fixtures by day. Expects the list sorted by kickoff. */
+export function groupByDay(items: ScoredFixture[]) {
+  const groups: { day: string; items: ScoredFixture[] }[] = [];
+  for (const item of items) {
+    const day = dayLabel(item.fixture.kickoff);
+    const last = groups[groups.length - 1];
+    if (last && last.day === day) {
+      last.items.push(item);
+    } else {
+      groups.push({ day, items: [item] });
+    }
+  }
+  return groups;
+}
