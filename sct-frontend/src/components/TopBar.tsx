@@ -3,6 +3,7 @@ import {Link} from "react-router";
 import {useAuth} from "../contexts/AuthContext";
 import type {League} from "../types/fixture";
 import LeagueTabs from "./LeagueTabs";
+import Logo from "./Logo";
 
 
 interface TopBarProps {
@@ -18,15 +19,7 @@ export default function TopBar({selectedLeague, onSelectLeague, children}: TopBa
         <header className="sticky top-0 z-10 border-b border-line-soft bg-bg/85
         backdrop-blur-md">
             <div className="mx-auto flex max-w-[1360px] flex-wrap items-center gap-5 px-8 py-3.5">
-                <Link to="/" className="flex items-center gap-2.5 text-ink no-underline">
-                <span className="grid size-[34px] place-items-center rounded-[9px] bg-accent">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    strokeWidth="2.4" strokeLinecap="round" className="text-bg" aria-hidden="true">
-                        <path d="m5 19v11" /><path d="m12 19V5" /><path d="M19 19v-6" />
-                    </svg>
-                </span>
-                <span className="font-display text-[26px] tracking=[0.02em]">MATCHDAY</span>
-                </Link>
+               <Logo />
                 <LeagueTabs selected={selectedLeague} onSelect={onSelectLeague} />
                 <div className="ml-auto flex items-center gap-3">
                     {isLoggedIn ? (
