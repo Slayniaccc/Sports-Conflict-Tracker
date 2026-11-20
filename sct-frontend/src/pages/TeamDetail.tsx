@@ -7,6 +7,7 @@ import TopBar from "../components/TopBar";
 import DayGroup from "../components/DayGroup";
 import { groupByDay } from "../lib/days";
 import { teamAbbr } from "../lib/teams";
+import TeamRail from "../components/TeamRail";
 
 
 const NO_CLASHES = new Map<number, ScoredFixture[]>();
@@ -112,39 +113,42 @@ export default function TeamDetail(){
             </section>
 
 
-       <h2 className="mb-4 mt-10 font-display text-[32px] uppercase leading-none">Upcoming</h2>
-            {upcoming.length === 0 ? (
-              <p className="text-muted">No upcoming fixtures.</p>
-            ) : (
-              groupByDay(shownUpcoming).map((group) => (
-                <DayGroup key={group.day} label={group.day} items={group.items} clashes={NO_CLASHES} />
-              ))
-              
-            )}
-            {upcoming.length > UPCOMING_SHOWN && (
-  <button
-    type="button"
-    onClick={() => setShowAll((s) => !s)}
-    aria-expanded={showAll}
-    className="mt-1 h-11 rounded-full border border-line px-5 text-sm font-semibold text-ink-2 transition-colors hover:border-ink-2 hover:text-ink"
-  >
-    {showAll ? "Show fewer" : `Show all ${upcoming.length}`}
-  </button>
-)}
+    <div className="mt-10 flex flex-col gap-7 lg:flex-row lg:items-start">
+  <div className="min-w-0 flex-1">
+    <h2 className="mb-4 font-display text-[32px] uppercase leading-none">Upcoming</h2>
+    {upcoming.length === 0 ? (
+      <p className="text-muted">No upcoming fixtures.</p>
+    ) : (
+      groupByDay(shownUpcoming).map((group) => (
+        <DayGroup key={group.day} label={group.day} items={group.items} clashes={NO_CLASHES} />
+      ))
+    )}
+    {upcoming.length > UPCOMING_SHOWN && (
+      <button
+        type="button"
+        onClick={() => setShowAll((s) => !s)}
+        aria-expanded={showAll}
+        className="mt-1 h-11 rounded-full border border-line px-5 text-sm font-semibold text-ink-2 transition-colors hover:border-ink-2 hover:text-ink"
+      >
+        {showAll ? "Show fewer" : `Show all ${upcoming.length}`}
+      </button>
+    )}
 
-            {recent.length > 0 && (
-              <>
-                <div className="mb-4 mt-10 flex flex-wrap items-end gap-3">
-                  <h2 className="font-display text-[32px] uppercase leading-none">Recently played</h2>
-                  <span className="text-sm text-muted">
-                    Last {recent.length} · final scores not stored yet
-                  </span>
-                </div>
-                {groupByDay(recent).map((group) => (
-                  <DayGroup key={group.day} label={group.day} items={group.items} clashes={NO_CLASHES} />
-                ))}
-              </>
-            )}
+    {recent.length > 0 && (
+      <>
+        <div className="mb-4 mt-10 flex flex-wrap items-end gap-3">
+          <h2 className="font-display text-[32px] uppercase leading-none">Recently played</h2>
+          <span className="text-sm text-muted">Last {recent.length} · final scores not stored yet</span>
+        </div>
+        {groupByDay(recent).map((group) => (
+          <DayGroup key={group.day} label={group.day} items={group.items} clashes={NO_CLASHES} />
+        ))}
+      </>
+    )}
+  </div>
+
+  <TeamRail teamId={team.id} upcoming={upcoming} />
+</div>
           </>
         )}
       </main>
