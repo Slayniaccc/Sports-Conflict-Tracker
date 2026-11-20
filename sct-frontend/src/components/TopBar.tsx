@@ -1,5 +1,6 @@
 import type {ReactNode} from "react";
 import {Link} from "react-router";
+import { useEffect, useRef } from "react";
 import {useAuth} from "../contexts/AuthContext";
 import type {League} from "../types/fixture";
 import LeagueTabs from "./LeagueTabs";
@@ -14,9 +15,21 @@ interface TopBarProps {
 
 export default function TopBar({selectedLeague, onSelectLeague, children}: TopBarProps){
     const {isLoggedIn, user,logout} = useAuth();
+    const headerRef = useRef<HTMLElement>(null);
+
+useEffect(() => {
+  const el = headerRef.current;
+  if (!el) return;
+  const root = document.documentElement;
+  const observer = new ResizeObserver(() => {
+    root.style.setProperty("--header-h", `${el.offsetHeight}px`);
+  });
+  observer.observe(el);
+  return () => observer.disconnect();
+}, []);
     const initials = (user?.email ?? "").slice(0, 2).toUpperCase();
     return (
-        <header className="sticky top-0 z-10 border-b border-line-soft bg-bg/85
+        <header ref={headerRef} className="sticky top-0 z-10 border-b border-line-soft bg-bg/85
         backdrop-blur-md">
             <div className="mx-auto flex max-w-[1360px] flex-wrap items-center gap-5 px-8 py-3.5">
                <Logo />
@@ -34,8 +47,8 @@ export default function TopBar({selectedLeague, onSelectLeague, children}: TopBa
                          <button
                          type="button"
                          onClick={logout}
-                         className="h=11 rounded-full border border-line px-4 text-sm font-semibold
-                         text-ink-2 transition-colors hover:border-muted hover: text-ink"
+                         className="h-11 rounded-full border border-line px-4 text-sm font-semibold
+                         text-ink-2 transition-colors hover:border-muted hover:text-ink"
                          >
                             Sign out
                          </button>

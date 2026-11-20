@@ -132,7 +132,11 @@ const error = loading ? null : result.error;
               />
             ))}
           </div>
-          <aside aria-label="Your team and what's next" className="flex w-full shrink-0 flex-col gap-[18px] lg:w-[320px]">
+          <aside aria-label="Your team and what's next" className="flex w-full shrink-0 flex-col gap-[18px] lg:sticky lg:top-[calc(var(--header-h,140px)_+_24px)] lg:w-[320px]"
+          
+          
+          
+          >
             <YourTeamCard />
             <ComingNextCard />
             <SignInCard />
