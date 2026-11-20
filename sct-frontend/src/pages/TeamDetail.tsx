@@ -11,6 +11,7 @@ import { teamAbbr } from "../lib/teams";
 
 const NO_CLASHES = new Map<number, ScoredFixture[]>();
 const PLAYED_SHOWN = 10;
+const UPCOMING_SHOWN = 5;
 
 function byKickoff(a: ScoredFixture, b: ScoredFixture) {
   return new Date(a.fixture.kickoff).getTime() - new Date(b.fixture.kickoff).getTime();
@@ -22,12 +23,14 @@ export default function TeamDetail(){
     const[loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [team,setTeam] = useState<TeamDetailData | null>(null);
+    const [showAll, setShowAll] = useState(false);
 
     useEffect(() => {
         if(!id) return;
         let cancelled = false;
         setLoading(true);
         setError(null);
+        setShowAll(false);
 
         getTeamDetail(id)
         .then((data) => {
@@ -53,6 +56,7 @@ export default function TeamDetail(){
  const upcoming = fixtures.filter((f) => new Date(f.fixture.kickoff).getTime() >= now).sort(byKickoff);
   const played = fixtures.filter((f) => new Date(f.fixture.kickoff).getTime() < now).sort(byKickoff).reverse();
   const recent = played.slice(0, PLAYED_SHOWN);
+  const shownUpcoming = showAll ? upcoming : upcoming.slice(0, UPCOMING_SHOWN);
 
 
       return (
@@ -112,10 +116,21 @@ export default function TeamDetail(){
             {upcoming.length === 0 ? (
               <p className="text-muted">No upcoming fixtures.</p>
             ) : (
-              groupByDay(upcoming).map((group) => (
+              groupByDay(shownUpcoming).map((group) => (
                 <DayGroup key={group.day} label={group.day} items={group.items} clashes={NO_CLASHES} />
               ))
+              
             )}
+            {upcoming.length > UPCOMING_SHOWN && (
+  <button
+    type="button"
+    onClick={() => setShowAll((s) => !s)}
+    aria-expanded={showAll}
+    className="mt-1 h-11 rounded-full border border-line px-5 text-sm font-semibold text-ink-2 transition-colors hover:border-ink-2 hover:text-ink"
+  >
+    {showAll ? "Show fewer" : `Show all ${upcoming.length}`}
+  </button>
+)}
 
             {recent.length > 0 && (
               <>
