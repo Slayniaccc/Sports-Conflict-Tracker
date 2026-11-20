@@ -1,3 +1,4 @@
+import { Loading, Bar } from "../components/Skeleton";
 import { useParams, Link, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { getScoredFixture,getScoredFixtures  } from "../api/fixtures";
@@ -86,7 +87,13 @@ if (fixture && leagueFixtures?.league === league) {
 
 {
     loading && (
-        <p className="text-muted">Loading fixture…</p>
+        <Loading label="Loading fixture">
+          <Bar className="h-[240px] w-full rounded-[22px]" />
+          <div className="flex flex-wrap gap-6">
+            <Bar className="h-[200px] min-w-[280px] flex-1 rounded-[18px]" />
+            <Bar className="h-[200px] min-w-[280px] flex-1 rounded-[18px]" />
+          </div>
+        </Loading>
     )
 }
 

@@ -1,3 +1,4 @@
+import { Loading, FixtureListSkeleton } from "./components/Skeleton";
 import { useState, useEffect } from "react";
 import type { League, ScoredFixture } from "./types/fixture";
 import DayGroup from "./components/DayGroup";
@@ -112,14 +113,16 @@ const error = loading ? null : result.error;
 
 
             {loading && (
-              <p className="text-zinc-500">Loading fixtures...</p>
+              <Loading label="Loading fixtures">
+                <FixtureListSkeleton rows={6} />
+              </Loading>
             )}
 
             {error && (
-              <p className="text-red-500">Error: {error}</p>
+              <p className="text-clash">Error: {error}</p>
             )}
             {!loading && !error && visible.length === 0 && (
-              <p className="text-zinc-500">No upcoming {selectedLeague} fixtures.</p>
+              <p className="text-muted">No upcoming {selectedLeague} fixtures.</p>
             )}
             {!loading && !error && groupByDay(visible).map((group) => (
               <DayGroup

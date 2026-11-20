@@ -1,3 +1,4 @@
+import { Loading, FixtureListSkeleton, HeaderSkeleton } from "../components/Skeleton";
 import {useParams, Link, useNavigate} from "react-router";
 import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
@@ -70,7 +71,12 @@ export default function TeamDetail(){
             <ArrowLeft aria-hidden="true" className="size-4" />
             Back to fixtures
           </Link>
-          {loading && <p className="text-muted">Loading team...</p>}
+          {loading && (
+            <Loading label="Loading team">
+              <HeaderSkeleton />
+              <FixtureListSkeleton rows={5} />
+            </Loading>
+          )}
 {error && (
   <div className="rounded-[18px] border border-dashed border-line px-6 py-12 text-center">
     <p className="font-display text-[28px] uppercase">
