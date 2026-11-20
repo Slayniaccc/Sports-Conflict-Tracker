@@ -2,8 +2,7 @@ import type {ReactNode} from "react";
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { useFavoriteTeam } from "../hooks/useFavoriteTeam";
-import { teamAbbr, teamShort } from "../lib/teams";
-import type { ScoredFixture, TeamDetail } from "../types/fixture";
+import { teamAbbr, matchupText } from "../lib/teams";
 
 
 function Panel({children}: {children: ReactNode}) {
@@ -17,19 +16,7 @@ function Panel({children}: {children: ReactNode}) {
     )
 }
 
-function nextGameText(team: TeamDetail, next: ScoredFixture): string {
-    const atHome = next.fixture.homeTeam.id === team.id;
-    const opponent = atHome ? next.fixture.awayTeam : next.fixture.homeTeam;
-    const when = new Date(next.fixture.kickoff).toLocaleString([], {
-          weekday: "short",
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    })
-     return `${atHome ? "vs" : "at"} ${teamShort(opponent.name, opponent.league)} · ${when}`;
-}
+
 
 export default function YourTeamCard() {
     const fav = useFavoriteTeam();
@@ -82,7 +69,7 @@ export default function YourTeamCard() {
       </div>
        <dl className="mt-4 flex justify-between gap-3 border-t border-line-soft pt-3.5 text-sm">
         <dt className="text-muted">Next game</dt>
-        <dd className="text-right">{next ? nextGameText(team, next) : "None scheduled"}</dd>
+        <dd className="text-right">{next ? matchupText(team.id, next) : "None scheduled"}</dd>
       </dl>
     <Link
         to={`/teams/${team.id}`}

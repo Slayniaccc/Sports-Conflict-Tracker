@@ -1,3 +1,7 @@
+import type { ScoredFixture } from "../types/fixture";
+
+
+
 const OVERRIDES: Record<string, {abbr?: string; short?: string}> = {
 "Manchester City FC": { abbr: "MCI", short: "Man City" },
   "Manchester United FC": { abbr: "MUN", short: "Man Utd" },
@@ -31,4 +35,18 @@ export function teamShort(name: string, league: string): string {
   if (league === "EPL") return w.join(" ");
   if (w[w.length - 1] === "Sox") return w.slice(-2).join(" ");
   return w[w.length - 1];
+}
+
+export function matchupText(teamId: number, item: ScoredFixture): string{
+  const atHome = item.fixture.homeTeam.id === teamId;
+  const opponent = atHome ? item.fixture.awayTeam : item.fixture.homeTeam;
+  const when = new Date(item.fixture.kickoff).toLocaleString([], {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  return `${atHome ? "vs" : "at"} ${teamShort(opponent.name, opponent.league)} · ${when}`;
 }
