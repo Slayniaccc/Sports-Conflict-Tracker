@@ -125,8 +125,8 @@ export default function TeamDetail(){
     {upcoming.length === 0 ? (
       <p className="text-muted">No upcoming fixtures.</p>
     ) : (
-      groupByDay(shownUpcoming).map((group) => (
-        <DayGroup key={group.day} label={group.day} items={group.items} clashes={NO_CLASHES} />
+      groupByDay(shownUpcoming).map((group, i) => (
+        <DayGroup  index={i} key={group.day} label={group.day} items={group.items} clashes={NO_CLASHES} />
       ))
     )}
     {upcoming.length > UPCOMING_SHOWN && (
@@ -146,8 +146,8 @@ export default function TeamDetail(){
           <h2 className="font-display text-[32px] uppercase leading-none">Recently played</h2>
           <span className="text-sm text-muted">Last {recent.length} · final scores not stored yet</span>
         </div>
-        {groupByDay(recent).map((group) => (
-          <DayGroup key={group.day} label={group.day} items={group.items} clashes={NO_CLASHES} />
+        {groupByDay(recent).map((group, i) => (
+          <DayGroup index={i} key={group.day} label={group.day} items={group.items} clashes={NO_CLASHES} />
         ))}
       </>
     )}

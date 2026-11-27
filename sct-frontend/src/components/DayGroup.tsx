@@ -1,20 +1,26 @@
 import type {League, ScoredFixture} from "../types/fixture";
 import {LEAGUE_SWATCH} from "../lib/leagues";
 import FixtureRow from "./FixtureRow";
+import { motion } from "motion/react";
 
 
 interface DayGroupProps {
   label: string | null;
   items: ScoredFixture[];
   clashes: Map<number, ScoredFixture[]>;
+  index?: number;
 }
 
-export default function DayGroup({label, items, clashes} : DayGroupProps){
+export default function DayGroup({label, items, clashes, index=0} : DayGroupProps){
 const ranked =[...items].sort((a, b)=> b.score - a.score);
 const league = items[0]?.fixture.homeTeam.league as League;
 
 return (
-    <section className="mb-5 overflow-hidden rounded-[18px] border border-line-soft 
+    <motion.section 
+      initial={{ opacity: 0, y: 8 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1], delay: Math.min(index, 6) * 0.05 }}
+    className="mb-5 overflow-hidden rounded-[18px] border border-line-soft 
     bg-surface">
         {label && (
             <header className="flex items-center gap-3 border-b border-line-soft
@@ -33,6 +39,6 @@ return (
                 </li>
             ))}
         </ul>
-    </section>
+    </motion.section>
 )
 }

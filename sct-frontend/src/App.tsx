@@ -13,6 +13,7 @@ import { findClashes } from "./lib/clashes";
 import { getScoredFixtures } from "./api/fixtures";
 import {useSearchParams} from "react-router";
 import { LEAGUES } from "./lib/leagues";
+import { motion } from "motion/react";
 
 //currently a stand in for a real status field,keeps games that recently kicked off on the page
 const IN_PROGRESS_GRACE_MS = 3 * 60 * 60 * 1000;
@@ -87,13 +88,18 @@ const error = loading ? null : result.error;
 
       <main className="mx-auto max-w-[1360px] px-8 pb-16 pt-7">
         {!loading && !error && topPick && (
-          <div className="mb-8">
+          <motion.div
+          key={topPick.fixture.id}
+          className="mb-8"
+          initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
+  >
             <HeroPick
-              key={topPick.fixture.id}
               item={topPick}
               clashesWith={clashes.get(topPick.fixture.id) ?? []}
             />
-          </div>
+          </motion.div>
         )}
 
         <div className="flex flex-col gap-7 lg:flex-row lg:items-start">
@@ -124,9 +130,10 @@ const error = loading ? null : result.error;
             {!loading && !error && visible.length === 0 && (
               <p className="text-muted">No upcoming {selectedLeague} fixtures.</p>
             )}
-            {!loading && !error && groupByDay(visible).map((group) => (
+            {!loading && !error && groupByDay(visible).map((group, i) => (
               <DayGroup
-                key={group.day}
+              index ={i}
+         key={`${selectedLeague}-${group.day}`}
                 label={selectedDay ? null : group.day}
                 items={group.items}
                 clashes={clashes}
