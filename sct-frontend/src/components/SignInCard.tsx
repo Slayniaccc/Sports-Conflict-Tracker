@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/useAuth";
 
 export default function SignInCard() {
   const { isLoggedIn } = useAuth();

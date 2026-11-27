@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/useAuth";
 import { getMe } from "../api/user";
 import { getTeamDetail } from "../api/fixtures";
 import type { ScoredFixture, TeamDetail } from "../types/fixture";

@@ -1,7 +1,7 @@
 import {useState, type SubmitEvent} from 'react'
 import {useNavigate, Link} from "react-router";
 import {loginUser} from "../api/auth";
-import {useAuth} from "../contexts/AuthContext"
+import {useAuth} from "../contexts/useAuth"
 import AuthLayout from "../components/AuthLayout";
 import Field from "../components/Field";
 

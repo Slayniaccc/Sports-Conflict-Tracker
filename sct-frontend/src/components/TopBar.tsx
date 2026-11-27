@@ -1,7 +1,7 @@
 import type {ReactNode} from "react";
 import {Link} from "react-router";
 import { useEffect, useRef } from "react";
-import {useAuth} from "../contexts/AuthContext";
+import {useAuth} from "../contexts/useAuth";
 import type {League} from "../types/fixture";
 import LeagueTabs from "./LeagueTabs";
 import Logo from "./Logo";
