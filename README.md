@@ -8,16 +8,22 @@ You follow teams in several leagues. When their matches overlap, the app finds t
 
 ```json
 {
-  "fixture": "Lakers vs Celtics",
-  "league": "NBA",
-  "score": 50,
-  "explanation": "RivalryRule: +20. PlayoffImplicationRule: +25. HomeAdvantageRule: +5."
+  "fixture": { "homeTeam": { "name": "LA Clippers" }, "awayTeam": { "name": "Los Angeles Lakers" }, "kickoff": "…" },
+  "score": 40,
+  "reasoning": "Battle of LA: LA Clippers vs Los Angeles Lakers · Your team Los Angeles Lakers travels to LA Clippers · Home court for LA Clippers",
+  "factors": [
+    { "kind": "RIVALRY", "points": 20, "label": "Battle of LA" },
+    { "kind": "FAVORITE_TEAM", "points": 15, "label": "Your team travels" },
+    { "kind": "HOME", "points": 5, "label": "Home court" }
+  ]
 }
 ```
 
+*(Shortened response from `GET /api/fixtures/scored`, for a user whose favourite team is the Lakers. Each factor also carries a full `reason` sentence.)*
+
 *(Illustrative response from `GET /api/fixtures/scored`.)*
 
-**Status:** backend feature-complete. Frontend (React + TypeScript + Tailwind) has auth, the fixture list, fixture pages and team pages. See [ROADMAP.md](ROADMAP.md) for what's next.
+**Status:** backend feature-complete for fixtures, scoring and auth. The frontend redesign is done: a ranked home page with clash detection, fixture and team pages, and sign-in. Next up are an account page and match results. See [ROADMAP.md](ROADMAP.md).
 
 ## Features
 
@@ -27,6 +33,10 @@ You follow teams in several leagues. When their matches overlap, the app finds t
 - League filtering: `GET /api/fixtures/scored?league=NBA`
 - Personalised scores: set a favourite team and its fixtures get a +15 bonus (logged-out users get base scores)
 - Team pages: `GET /api/teams/{id}` returns a team and all its fixtures, scored for the current user
+- Rivalries stored in Postgres with an intensity (1–3) and a name, e.g. "Battle of LA"
+- Structured scoring factors (`kind`, `points`, `label`, `reason`) alongside the readable reasoning
+- Clash detection: games in the same league whose time windows overlap are flagged
+- Redesigned frontend: ranked day-by-day fixtures, a weekly top pick, score breakdowns, team pages, skeleton loading and reduced-motion-aware animations
 
 ## Tech Stack
 
@@ -35,8 +45,8 @@ You follow teams in several leagues. When their matches overlap, the app finds t
 | Backend | Java 21, Spring Boot 3.3, Spring Security (JWT) |
 | Database | Postgres 16, Flyway migrations |
 | Data sources | BALLDONTLIE (NBA/NFL/MLB), Football-Data.org (EPL) |
-| Tooling | Maven, JUnit, Docker, GitHub Actions |
-| Frontend | TypeScript, React, Vite, Tailwind CSS, React Router *(in progress)* |
+| Tooling | Maven, JUnit, AssertJ, Testcontainers, Docker, GitHub Actions |
+| Frontend | TypeScript, React 19, Vite, Tailwind CSS v4, React Router, Motion, lucide-react |
 | Deployment | Railway or Fly.io *(planned)* |
 
 ## Getting Started
@@ -72,7 +82,7 @@ Run the tests (also loads `.env`):
 ./scripts/run-tests.sh -Dtest=ConflictEngineTest  # one class
 ```
 
-Sync tests call the live APIs and can hit free-tier rate limits (HTTP 429) if run back to back.
+Tests that call the live APIs are skipped unless `RUN_LIVE_SYNC_TESTS=true`, because they can hit free-tier rate limits (HTTP 429) when run back to back. `RivalryRepositoryTest` runs against a throwaway Postgres via Testcontainers, so Docker must be running; without Docker it is skipped.
 
 Then register a user and call the API:
 
@@ -106,12 +116,14 @@ The rule engine is pure Java with no framework dependencies. Spring is layered a
 | `config` | Spring Security, JWT utilities, the `ConflictEngine` bean |
 | `controller` | REST API |
 | `dto` | Request and response shapes |
-| `engine` | Aggregates rule outputs into a conflict score |
+| `engine` | Aggregates rule outputs into a conflict score; `RivalryLookup` holds rivalries in memory |
 | `entity` / `repository` | JPA entities and Spring Data repositories |
-| `model` | Domain records: `Team`, `Fixture`, `ConflictScore` |
+| `model` | Domain records: `Team`, `Fixture`, `Factor`, `ConflictScore`, `Rivalry` |
 | `rules` | `ImportanceRule` interface and implementations |
 | `service` | Sync orchestration, date parsing, fixture mapping |
-| `resources/db/migration` | Flyway migrations V1 to V6 |
+| `resources/db/migration` | Flyway migrations V1 to V8 |
+
+The frontend lives in `sct-frontend/src`: `pages/` (home, fixture, team, login, register), `components/`, `hooks/`, `lib/` (pure helpers such as clash detection and day grouping), `api/` and `contexts/`.
 
 ### Data ingestion
 
@@ -132,26 +144,28 @@ All leagues write to one `fixture` table, disambiguated by a composite `(league,
 
 `ConflictEngine` aggregates the active `ImportanceRule` implementations plus a per-user favourite team bonus:
 
-| Rule | Score |
+| Factor | Score |
 |------|-------|
-| `RivalryRule` | +20 for rivalry matches |
-| `PlayoffImplicationRule` | +25 for playoff implications |
-| `HomeAdvantageRule` | +5 baseline fixture bonus |
-| `FavoriteTeamRule` | +15 when the logged-in user's favourite team is playing |
+| `RivalryRule` | +10 × intensity (1–3), from the `rivalry` table |
+| `PlayoffImplicationRule` | +25 when the fixture is flagged as having playoff implications |
+| `HomeAdvantageRule` | +5 for the home team (court, field or ground by league) |
+| Favourite team | +15 when the logged-in user's favourite team is playing |
 
-It returns a `ConflictScore` with the fixture, the composite score, and an explanation string.
+It returns a `ConflictScore` with the fixture, the total, a readable `reasoning` string, and the `factors` sorted biggest first.
 
 ## Engineering Notes
 
 Some decisions worth calling out:
 
 - **Idempotent syncs:** re-running a sync doesn't duplicate data, and this is covered by tests.
-- **Resilient ingestion:** cursor pagination for BALLDONTLIE, MLB `season_type` filtering, EPL season consistency checks, null and malformed date handling, typed HTTP exceptions, and per-sync rate limiting for the free-tier limits (5 and 10 req/min).
+- **Resilient ingestion:** cursor pagination for BALLDONTLIE, MLB `season_type` filtering, EPL season consistency checks, null and malformed date handling, and typed HTTP exceptions. A between-page delay for free-tier rate limits exists but is currently set to 0.
 - **Framework-free core:** keeping the rule engine independent of Spring makes it easy to unit test and extend.
+- **Tests that don't depend on your machine:** live-API tests are opt-in, and the repository test uses Testcontainers instead of the dev database.
+- **Derived UI state:** loading states are worked out from the stored result and the current URL rather than set inside effects, which avoids stale content and extra renders.
 
 ## Roadmap
 
-Next up: plain-English reasoning strings, a rivalries table with intensity, a profile page for choosing your favourite team, then a frontend redesign. Later: deployment, user-defined rule weightings, kickoff alerts and calendar export, and a redesigned stake model for European formats (title races, relegation battles). Full plan, known technical debt and design proposals are in [ROADMAP.md](ROADMAP.md).
+Next up: an account page (favourite team picker, sign out, automatic sign-out on an expired token), then match results, form and momentum, standings-based stakes, and richer reasoning built on that data. Later: frontend tests and lint in CI, deployment, user-defined rule weightings, kickoff alerts and calendar export. Full plan, known technical debt and design proposals are in [ROADMAP.md](ROADMAP.md).
 
 ## Data Sources
 
