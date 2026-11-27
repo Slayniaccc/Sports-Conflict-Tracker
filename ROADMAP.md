@@ -9,35 +9,44 @@ Planned work, known technical debt, and design proposals for Sports Conflict Tra
 - [ ] Alerts and calendar export
 - [ ] Historical stats integration
 
+## Done
+
+- [x] Team pages: `GET /api/teams/{id}` plus `/teams/:id`
+- [x] Readable reasoning: labelled factors such as "Home court", "Your team travels"
+- [x] Rivalries table with intensity and names, loaded into `RivalryLookup`
+- [x] Frontend redesign (PR #9)
+- [x] Environment-independent tests: live-API tests opt-in, Testcontainers for the repository test (PR #8)
+
 ## Current Focus (in order)
 
-1. [x] **Team pages**: `GET /api/teams/{id}` plus `/teams/:id` page, linked from fixture pages
-2. [ ] **Readable reasoning**: "Home court (+5)", "Your team is playing (+15)" instead of
-   `HomeAdvantageRule: +5. FavoriteTeamRule: +15`. Also decide whether home advantage means
-   "home team" (current) or "your team is at home"
-3. [ ] **Rivalries table**: move the hardcoded list into Postgres with intensity
-   (see Stake Model below). Lakers vs Clippers currently gets no rivalry bonus
-4. [ ] **Profile page**: set and change favourite team in the app (currently only via `curl`)
-5. [ ] **Redesign**: see Phase 1 and the Redesign section below
-6. [ ] **Post-MVP**: user-defined rule weightings (new table, migration, settings UI), so users
-   can say rivalries matter twice as much as home advantage
+1. [ ] **Account page**: favourite team picker (`GET /api/teams`, `PUT /api/users/me/favorite-team`), sign out,
+       and automatic sign-out when the token expires or the API returns 401
+2. [ ] **Scores and results**: store home/away scores and match status; a small refresh sync for recent and live games,
+       separate from the season sync
+3. [ ] **Form and momentum**: last-five results and streaks, computed from stored results; a `FormRule`
+4. [ ] **Standings and stakes**: league position (computed, or Football-Data standings for EPL); a `StakeRule`
+       for title races, top four and relegation. Replaces the playoff flag nothing sets today
+5. [ ] **Player rivalries**: hand-curated table plus player stats; check each provider's free tier first
+6. [ ] **Richer reasoning**: templates from the new factors; optionally an AI rewrite of true facts only,
+       generated server-side, cached, with a template fallback
+7. [ ] **Post-MVP**: user-defined rule weightings (new table, migration, settings UI)
 
 ## Frontend Roadmap
 
 ### Phase 1: UI/UX Design
 
-- [ ] Core screen wireframes
-- [ ] App navigation hierarchy
-- [ ] Fixture card layout (score and reasoning display)
-- [ ] Visual representation of overlapping kickoff times
-- [ ] Design system setup (palette, typography)
+- [x] Core screen wireframes
+- [x] App navigation hierarchy
+- [x] Fixture card layout (score and reasoning display)
+- [x] Visual representation of overlapping kickoff times
+- [x] Design system setup (palette, typography)
 
 ### Phase 2: Setup & Scaffolding
 
 - [x] Initialize Vite + React + TypeScript
 - [x] Configure Tailwind CSS
 - [x] Setup React Router
-- [ ] Configure ESLint + Prettier (ESLint done, Prettier not yet)
+- [ ] Configure Prettier (ESLint done and lint-clean)
 - [x] Project directory setup (`pages/`, `components/`, `api/`, `types/`, `lib/`, `contexts/`)
 
 ### Phase 3: Authentication
@@ -51,7 +60,7 @@ Planned work, known technical debt, and design proposals for Sports Conflict Tra
 
 - [x] Scored fixture list view (`GET /api/fixtures/scored`)
 - [x] League filtering (`?league=NBA`)
-- [ ] Priority sorting
+- [x] Priority sorting
 - [x] Fixture detail page with score breakdown
 - [x] Team detail page (`/teams/:id`) with upcoming and played fixtures
 - [x] Loading, error, and empty states
@@ -62,13 +71,13 @@ Planned work, known technical debt, and design proposals for Sports Conflict Tra
 - [ ] Team selection interface (`GET /api/teams`) on a profile page
 - [ ] Follow/unfollow team actions
 - [ ] Personalised fixture feed filtered by followed teams
-- [ ] Clash visualization for overlapping match times
+- [x] Clash visualization for overlapping match times
 
 ### Phase 6: Interface Refinements
 
-- [ ] Layout responsiveness
-- [ ] Dark theme support
-- [ ] Skeleton loading states
+- [x] Layout responsiveness
+- [x] Dark theme support
+- [x] Skeleton loading states
 - [ ] Global error boundary and toast notifications
 
 ### Phase 7: Deployment
@@ -80,30 +89,33 @@ Planned work, known technical debt, and design proposals for Sports Conflict Tra
 - [ ] Commit a `.env.example` listing required variables
 - [ ] Production deployment to Railway / Fly.io
 
-## Redesign
+## Redesign (done, PR #9)
 
-Inspiration: dark live-scores style (near-black, single lime accent, thin-bordered panels,
-uppercase tracked labels, mono numerals, competitions sidebar with colour squares).
-Built around the conflict score rather than copied as a live-scores app.
+Dark live-scores style built around the conflict score: near-black background, a single lime accent,
+thin-bordered panels, uppercase tracked labels, mono numerals.
 
-- [ ] Design tokens in `index.css` (Tailwind v4 `@theme`)
-- [ ] Typography: Inter in multiple weights (Bold headlines, Semibold card titles and badges,
-      Regular body and reasoning) plus a mono font for scores and times.
-      Open question: one condensed display font for headlines only
-- [ ] Sport-specific accent colours in the sidebar and sport icons next to leagues
-- [ ] Hover effects on cards instead of cursor changes
-- [ ] Hero panel: today's top-scored fixture with its reasoning
-- [ ] No fake data: scores, team colours and standings need backend work first
-  - [ ] Scores and match status (see "Fixture status and live scores" below)
-  - [ ] Team colour column on `TeamEntity`
-  - [ ] Standings and form via Football-Data.org
+- [x] Design tokens in `index.css` (Tailwind v4 `@theme`) and Fontsource fonts (Anton, Inter, JetBrains Mono)
+- [x] League tabs with colour swatches, day strip, hero top pick, ranked day groups, clash tags
+- [x] Fixture page: score breakdown, clash card, planned modules preview
+- [x] Team page: next five plus "show all", recently played, next game and big games
+- [x] Hover states, skeletons, entrance animations, sticky side columns
+- [ ] Team colours (needs a colour column on `TeamEntity`)
+- [ ] Real data for the planned modules: momentum, league table and form, scorers (see Current Focus)
+
+## Testing & CI
+
+- [ ] Frontend tests: Vitest and React Testing Library
+  - [ ] `lib/` helpers first: `findClashes`, `buildWeek`, `dayHeading`, `groupByDay`, `scoreTier`, `teamAbbr`, `teamShort`, `matchupText`
+  - [ ] Components: `FixtureRow` (your team, clash tag), team page "show all"
+- [ ] Run `npm run lint`, `npm run build` and frontend tests in CI
+- [ ] Make CI dependency downloads more reliable (Maven Central returned 429 on a run after PR #9)
 
 ## Backend Maintenance & Technical Debt
 
 ### Refactoring
 
 - [ ] Extract `TeamService` from `TeamController` (constructor has 8 parameters)
-- [ ] Move `FixtureDetail`'s inline `fetch` into `getScoredFixture(id)` in `api/fixtures.ts`
+- [x] Move `FixtureDetail`'s inline `fetch` into `getScoredFixture(id)` in `api/fixtures.ts`
 - [ ] Consistent JSON field naming (`is_Verified`, `created_at` vs `id`, `email`)
 
 ### Reliability
@@ -112,13 +124,16 @@ Built around the conflict score rather than copied as a live-scores app.
 - [ ] Mock external APIs in sync tests instead of calling them live
 - [ ] Test DB isolation (decouple tests from dev DB)
 - [ ] Transactional test wrappers
-- [ ] Test environment config (`src/test/resources/application-test.yml`)
+- [x] Test environment config (`src/test/resources/application-test.yml`)
+- [ ] Reload rivalries without a restart (`feat/rivalry-reload`: atomic map swap plus scheduled refresh)
+- [ ] Re-enable a between-page delay for BALLDONTLIE syncs (`INTER_PAGE_DELAY_MS` is 0)
 - [ ] Cross-league integrity tests
 
 ### Schema & Data Access
 
 - [ ] Standardize `team.external_id` (varchar 50) and `fixture.external_id` (varchar 255)
-- [ ] Resolve N+1 queries on fixture reads (`JOIN FETCH` / `@EntityGraph`)
+- [ ] Resolve N+1 queries on fixture reads (`JOIN FETCH` / `@EntityGraph`). Confirmed in `show-sql`
+      logs: one fixture query, then one team query per team
 
 ### Security
 
@@ -132,6 +147,11 @@ Built around the conflict score rather than copied as a live-scores app.
 - [ ] Disable `spring.jpa.show-sql` for production profiles
 - [ ] Implement `equals`/`hashCode` for `TeamEntity` and `AppUserEntity`
 - [ ] Clean up redundant root-level `src/` directory
+- [ ] Return 404 instead of `RuntimeException` (500) for missing teams and users
+- [ ] Favourite-team check compares `externalId` only; include league (NBA/NFL ids can collide)
+- [ ] Add endpoints for NFL and MLB team sync (service methods exist, only tests call them)
+- [ ] Remove or use `UserFollowedTeamEntity` (not referenced by app code)
+- [ ] Turn off Spring Security DEBUG logging outside development
 
 ## Proposed Design: Stake Model
 
@@ -140,7 +160,7 @@ The current boolean flags (`isRivalry`, `isPlayoffImplication`) do not fit Europ
 Planned refactor: replace booleans with a unified `FixtureStakes` enum on `FixtureEntity`:
 `NONE` | `RIVALRY` | `PLAYOFF` | `TITLE_RACE` | `EUROPEAN_QUAL` | `RELEGATION`
 
-- Store rivalry definitions in a dedicated `rivalry` table (`league`, `team_a_id`, `team_b_id`, `intensity`, `note`).
+- [x] Rivalry definitions now live in a `rivalry` table (`league`, `team_a`, `team_b`, `intensity`, `note`), keyed by team name
 - Implement standalone stake detection engines per league type.
 
 ## Future Enhancements
@@ -171,5 +191,5 @@ Split by nature of the data:
   narrow sync over games near now (frequent, cheap, UPDATE not INSERT) as
   distinct from the bulk season sync (rare, 2:47, heavy quota).
 
-Unblocks: StatusBadge FT/LIVE branches, score rendering in TeamRow, honest
-past-fixture filtering, header accuracy.
+Unblocks: final scores on fixture rows and the team page, honest "recently played" with results,
+and form and momentum (see Current Focus).
