@@ -4,7 +4,7 @@ function Planned({ title, needs, children }: { title: string; needs: string; chi
   return (
     <section
       aria-label={`${title} (planned)`}
-      className="min-w-0 rounded-[18px] border border-dashed border-line bg-surface p-6"
+      className=" h-full min-w-0 rounded-[18px] border border-dashed border-line bg-surface p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-muted">{title}</h3>
