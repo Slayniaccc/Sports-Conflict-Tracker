@@ -14,39 +14,38 @@ import PlannedModules from "../components/PlannedModules";
 
 export default function FixtureDetail() {
     const { id } = useParams();
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [fixture, setFixture] = useState<ScoredFixture | null>(null);
     const [leagueFixtures, setLeagueFixtures] = useState<{
         league: League;
         data: ScoredFixture[] | null;
   } | null>(null);
+  const [result, setResult] = useState<{
+  id: string;
+  fixture: ScoredFixture | null;
+  error: string | null;
+} | null>(null);
     const navigate = useNavigate();
     useEffect(() => {
         if (!id) return;
         let cancelled = false;
-        setLoading(true);
-        setError(null);
-
         getScoredFixture(id)
             .then((data) => {
-                if (cancelled) return;
-                setFixture(data);
-                setLoading(false);
+                if (!cancelled) setResult({ id, fixture: data, error: null });
             })
 
             .catch((err) => {
 
 
-                if (cancelled) return;
-                setError(err.message)
-                setLoading(false)
+               if (!cancelled) setResult({ id, fixture: null, error: err.message });
             })
         return () => {
             cancelled = true;
         }
     }, [id])
-    const league = fixture ? (fixture.fixture.homeTeam.league as League) : null;
+   const current = result?.id === id ? result : null;
+const loading = current === null;
+const error = current?.error ?? null;
+const fixture = current?.fixture ?? null;
+const league = fixture ? (fixture.fixture.homeTeam.league as League) : null;
     useEffect(() => {
         if(!league) return;
         let cancelled = false;

@@ -22,38 +22,39 @@ function byKickoff(a: ScoredFixture, b: ScoredFixture) {
 export default function TeamDetail(){
     const {id} = useParams();
     const navigate = useNavigate();
-    const[loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [team,setTeam] = useState<TeamDetailData | null>(null);
-    const [showAll, setShowAll] = useState(false);
+  const [result, setResult] = useState<{
+  id: string;
+  team: TeamDetailData | null;
+  error: string | null;
+  fetchedAt: number;
+} | null>(null);
+const [showAllFor, setShowAllFor] = useState<string | null>(null);
 
-    useEffect(() => {
-        if(!id) return;
-        let cancelled = false;
-        setLoading(true);
-        setError(null);
-        setShowAll(false);
+useEffect(() => {
+  if (!id) return;
+  let cancelled = false;
+  getTeamDetail(id)
+    .then((data) => {
+      if (!cancelled) setResult({ id, team: data, error: null, fetchedAt: Date.now() });
+    })
+    .catch((err) => {
+      if (!cancelled) setResult({ id, team: null, error: err.message, fetchedAt: Date.now() });
+    });
+  return () => {
+    cancelled = true;
+  };
+}, [id]);
 
-        getTeamDetail(id)
-        .then((data) => {
-            if(cancelled) return;
-            setTeam(data);
-            setLoading(false);
-        })
-        .catch((err) => {
-            if(cancelled) return;
-            setError(err.message);
-            setLoading(false);
-        });
-        return () => {
-            cancelled = true;
-        }
-    }, [id]);
+const current = result?.id === id ? result : null;
+const loading = current === null;
+const error = current?.error ?? null;
+const team = current?.team ?? null;
+const showAll = showAllFor === id;
 
-    const league = team ? (team.league as League) : null;
-    const notFound = error === "HTTP 404";
+const league = team ? (team.league as League) : null;
+const notFound = error === "HTTP 404";
 
-    const now = Date.now();
+const now = current?.fetchedAt ?? 0;
  const fixtures = team?.fixtures ?? [];
  const upcoming = fixtures.filter((f) => new Date(f.fixture.kickoff).getTime() >= now).sort(byKickoff);
   const played = fixtures.filter((f) => new Date(f.fixture.kickoff).getTime() < now).sort(byKickoff).reverse();
@@ -132,7 +133,7 @@ export default function TeamDetail(){
     {upcoming.length > UPCOMING_SHOWN && (
       <button
         type="button"
-        onClick={() => setShowAll((s) => !s)}
+onClick={() => setShowAllFor(showAll ? null : (id ?? null))}
         aria-expanded={showAll}
         className="mt-1 h-11 rounded-full border border-line px-5 text-sm font-semibold text-ink-2 transition-colors hover:border-ink-2 hover:text-ink"
       >
