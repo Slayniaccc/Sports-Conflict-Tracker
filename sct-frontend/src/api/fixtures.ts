@@ -16,3 +16,11 @@ export async function getTeamDetail(id: string| number): Promise<TeamDetail>{
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
+
+export async function getScoredFixture(id: string | number): Promise<ScoredFixture> {
+  const res = await fetch(`${API_URL}/api/fixtures/scored/${id}`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}

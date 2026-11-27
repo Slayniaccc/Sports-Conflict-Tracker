@@ -10,6 +10,6 @@ public class PlayoffImplicationRule implements ImportanceRule {
     @Override
    public Optional<Factor> evaluate(Fixture fixture) {
         if (!fixture.isPlayoffImplication()) return Optional.empty();
-        return Optional.of(new Factor(25, "Playoff implications"));
+        return Optional.of(new Factor(Factor.Kind.PLAYOFF, 25, "Playoff implications", "Playoff implications"));
     }
 }

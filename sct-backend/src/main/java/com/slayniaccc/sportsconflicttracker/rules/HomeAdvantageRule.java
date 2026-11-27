@@ -13,6 +13,6 @@ public class HomeAdvantageRule implements ImportanceRule {
         case NFL, MLB -> "Home field";
         case EPL -> "Home ground";
     };
-    return Optional.of(new Factor(5, venue + " for " + fixture.homeTeam().name()));
+    return Optional.of(new Factor(Factor.Kind.HOME, 5, venue, venue  + " for " + fixture.homeTeam().name()));
  }
 }

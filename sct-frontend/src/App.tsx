@@ -1,111 +1,159 @@
+import { Loading, FixtureListSkeleton } from "./components/Skeleton";
 import { useState, useEffect } from "react";
 import type { League, ScoredFixture } from "./types/fixture";
-import FixtureCard from "./components/FixtureCard";
-import Sidebar from "./components/Sidebar";
-import  {toCardProps} from "./lib/toCardProps";
+import DayGroup from "./components/DayGroup";
+import HeroPick from "./components/HeroPick";
+import YourTeamCard from "./components/YourTeamCard";
+import ComingNextCard from "./components/ComingNextCard";
+import SignInCard from "./components/SignInCard";
+import TopBar from "./components/TopBar";
+import DayStrip from "./components/DayStrip";
+import { buildWeek, dayHeading, dayKey, groupByDay } from "./lib/days";
+import { findClashes } from "./lib/clashes";
 import { getScoredFixtures } from "./api/fixtures";
+import {useSearchParams} from "react-router";
+import { LEAGUES } from "./lib/leagues";
+import { motion } from "motion/react";
 
 //currently a stand in for a real status field,keeps games that recently kicked off on the page
-const IN_PROGRESS_GRACE_MS = 3 * 60 * 60 * 1000; 
-function dayLabel(kickoff: string){
-  return new Date(kickoff).toLocaleDateString([], {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
+const IN_PROGRESS_GRACE_MS = 3 * 60 * 60 * 1000;
+
+
+function parseLeague(value: string|null):League{
+  const upper = value?.toUpperCase();
+ return LEAGUES.find((l) => l === upper) ?? "NBA";
 }
 
-//relies on the list already being sorted by kickoff
-function groupByDay(items: ScoredFixture[]){
-  const groups: { day: string; items: ScoredFixture[] }[] = [];
-  for (const item of items){
-    const day = dayLabel(item.fixture.kickoff);
-    const last = groups[groups.length - 1];
-    if(last && last.day === day){
-      last.items.push(item);
-    } else {
-      groups.push({ day, items: [item] });
-    }
+export default function App() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedLeague = parseLeague(searchParams.get("league"));
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+const [result, setResult] = useState<{
+ league: League;
+  data: ScoredFixture[];
+  error: string | null;
+} | null>(null);
+
+  function handleSelectLeague(league: League) {
+    if (league === selectedLeague) return;
+    setSearchParams({ league });
+  setSelectedDay(null);
   }
-  return groups;
-}
-export default function App(){
-  const[selectedLeague, setSelectedLeague] = useState<League>("NBA");
-  const[fixtures, setFixtures] = useState<ScoredFixture[]>([]);
-  const[loading, setLoading] = useState(true);
-  const[error, setError] = useState< string | null>(null);
-  function handleSelectLeague(league: League){
-  if(league === selectedLeague) return;
-  setSelectedLeague(league);
-  setLoading(true);
-  setError(null);
-}
   useEffect(() => {
-     let cancelled = false;
-        getScoredFixtures(selectedLeague)
-    .then((data) =>{
-      if(cancelled) return;
-      setFixtures(data);
-      setLoading(false)
-     })
-    .catch((err) => {
-      if(cancelled) return
-      setError(err.message);
-      setLoading(false)
-    })
-  return () => {
-    cancelled = true;
-  };
-}, [selectedLeague])
-const now = new Date();
-const upcoming = fixtures.filter(
-  (item) =>
-    new Date(item.fixture.kickoff).getTime() >= now.getTime() - IN_PROGRESS_GRACE_MS
-)
-.sort(
-  (a,b) => new Date(a.fixture.kickoff).getTime() - new Date(b.fixture.kickoff).getTime()
-);
-const visible = upcoming.slice(0, 20);
-  return(
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex">
-   <Sidebar selectedLeague={selectedLeague} onSelectLeague={handleSelectLeague} />
+    let cancelled = false;
+      const league = selectedLeague;
+    getScoredFixtures(selectedLeague)
+      .then((data) => {
+         if (!cancelled) setResult({ league, data, error: null });
+      })
+      .catch((err) => {
+          if (!cancelled) setResult({league, data: [], error: err.message });
+      })
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedLeague])
 
-        
-  
-      <main className="flex-1 p-8 overflow-y-auto">
-     
-       <div className="flex items-baseline justify-between mb-6">
-<h1 className="text-3xl font-semibold tracking-tight">Upcoming Fixtures</h1>
-        <p className="text-sm text-zinc-500">
-          Showing {visible.length} of {upcoming.length}</p>
+  const loading = result?.league !== selectedLeague;
+const fixtures = loading ? [] : result.data;
+const error = loading ? null : result.error;
+  const now = new Date();
+  const upcoming = fixtures.filter(
+    (item) =>
+      new Date(item.fixture.kickoff).getTime() >= now.getTime() - IN_PROGRESS_GRACE_MS
+  )
+    .sort(
+      (a, b) => new Date(a.fixture.kickoff).getTime() - new Date(b.fixture.kickoff).getTime()
+    );
+  const week = buildWeek(upcoming, now);
+  const visible = selectedDay
+    ? upcoming.filter((item) => dayKey(new Date(item.fixture.kickoff)) === selectedDay)
+    : upcoming.slice(0, 20);
+  const clashes = findClashes(upcoming);
+  const weekKeys = new Set(week.map((d) => d.key));
+  const candidates = selectedDay
+    ? visible
+    : upcoming.filter((item) => weekKeys.has(dayKey(new Date(item.fixture.kickoff))));
+  const topPick = candidates.reduce<ScoredFixture | null>(
+    (best, item) => (best === null || item.score > best.score ? item : best),
+    null,
+  );
+  return (
+    <div className="min-h-screen">
+      <TopBar selectedLeague={selectedLeague} onSelectLeague={handleSelectLeague}>
+        <DayStrip days={week} selected={selectedDay} onSelect={setSelectedDay} />
+      </TopBar>
+
+
+
+      <main className="mx-auto max-w-[1360px] px-8 pb-16 pt-7">
+        {!loading && !error && topPick && (
+          <motion.div
+          key={topPick.fixture.id}
+          className="mb-8"
+          initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
+  >
+            <HeroPick
+              item={topPick}
+              clashesWith={clashes.get(topPick.fixture.id) ?? []}
+            />
+          </motion.div>
+        )}
+
+        <div className="flex flex-col gap-7 lg:flex-row lg:items-start">
+          <div className="min-w-0 flex-1">
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+              <div>
+
+                <h1 className="font-display text-[44px] leading-none tracking-[0.01em]">{selectedDay ? dayHeading(selectedDay, now) : "UP NEXT"}</h1>
+                <p className="mt-1.5 text-sm text-muted">Ranked by how much each game matters to you.</p>
+              </div>
+              <p className="text-sm text-muted">
+                {selectedDay
+                  ? `${visible.length} ${visible.length === 1 ? "game" : "games"}`
+                  : `Showing ${visible.length} of ${upcoming.length}`}
+              </p>
+            </div>
+
+
+            {loading && (
+              <Loading label="Loading fixtures">
+                <FixtureListSkeleton rows={6} />
+              </Loading>
+            )}
+
+            {error && (
+              <p className="text-clash">Error: {error}</p>
+            )}
+            {!loading && !error && visible.length === 0 && (
+              <p className="text-muted">No upcoming {selectedLeague} fixtures.</p>
+            )}
+            {!loading && !error && groupByDay(visible).map((group, i) => (
+              <DayGroup
+              index ={i}
+         key={`${selectedLeague}-${group.day}`}
+                label={selectedDay ? null : group.day}
+                items={group.items}
+                clashes={clashes}
+
+
+              />
+            ))}
+          </div>
+          <aside aria-label="Your team and what's next" className="flex w-full shrink-0 flex-col gap-[18px] lg:sticky lg:top-[calc(var(--header-h,140px)_+_24px)] lg:w-[320px]"
+          
+          
+          
+          >
+            <YourTeamCard />
+            <ComingNextCard />
+            <SignInCard />
+          </aside>
         </div>
-       
-       {loading && (
-        <p className="text-zinc-500">Loading fixtures...</p>
-       )}
-
-       {error &&(
-        <p className="text-red-500">Error: {error}</p>
-       )}
-{!loading && !error && visible.length === 0 && (
-  <p className="text-zinc-500">No upcoming {selectedLeague} fixtures.</p>
-)}
-{!loading && !error && groupByDay(visible).map((group) => (
-  <section key={group.day} className="mb-8">
-    <h2 className="text-sm font-medium text-zinc-400 mb-3">{group.day}</h2>
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {group.items.map((item) => (
-        <FixtureCard
-        key={item.fixture.id}
-        {...toCardProps(item)}
-        />
-      ))}
-      </div>
-      </section>
-))}
 
       </main>
     </div>
   );
 }
-  
